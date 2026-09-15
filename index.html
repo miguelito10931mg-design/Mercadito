@@ -4,362 +4,402 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 <meta name="theme-color" content="#ff4d2e" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="mobile-web-app-capable" content="yes" />
-<title>Mercadito - Marketplace Local</title>
-<link rel="manifest" href='data:application/manifest+json,{"name":"Mercadito","short_name":"Mercadito","start_url":"./","display":"standalone","background_color":"%23ffffff","theme_color":"%23ff4d2e","orientation":"portrait"}' />
+<title>Mercadito - Bienvenido</title>
 <style>
 :root{
   --primary:#ff4d2e; --primary-dark:#e63a1c; --accent:#ffb800;
   --bg:#f5f6f8; --surface:#fff; --text:#1a1d22; --text-soft:#6b7280;
-  --border:#eceef1; --success:#16a34a; --danger:#dc2626; --warn:#f59e0b;
+  --border:#eceef1; --success:#16a34a; --danger:#dc2626;
   --radius:16px; --radius-sm:12px;
   --shadow-sm:0 2px 8px rgba(0,0,0,.06);
   --shadow-md:0 6px 20px rgba(0,0,0,.08);
   --shadow-lg:0 12px 32px rgba(0,0,0,.12);
-  --nav-h:68px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{margin:0;padding:0;font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);overscroll-behavior-y:contain;-webkit-font-smoothing:antialiased;}
+html,body{margin:0;padding:0;font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh;}
 button{font-family:inherit;cursor:pointer;border:none;background:none;}
 input,textarea,select{font-family:inherit;font-size:16px;}
 .hidden{display:none !important;}
-img{max-width:100%;display:block;}
 
-.biz-img.real-img{background-size:cover;background-position:center;font-size:0;overflow:hidden;}
-.biz-img.real-img .img-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.45));}
-.biz-img.real-img .biz-badge,.biz-img.real-img .biz-offer{z-index:2;}
-.biz-thumb.real-img{background-size:cover;background-position:center;font-size:0;}
-.product-img.real-img{background-size:cover;background-position:center;font-size:0;}
-.product-detail-hero.real-img{background-size:cover;background-position:center;font-size:0;}
-.menu-header.real-cover{background-size:cover;background-position:center;position:relative;background-image:none;}
-.menu-header.real-cover::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.4),rgba(0,0,0,.75));border-radius:0 0 22px 22px;}
-.menu-header.real-cover > *{position:relative;z-index:1;}
+.welcome-screen{
+  position:fixed;inset:0;
+  background:linear-gradient(165deg,#ff4d2e 0%,#ff7a55 45%,#ffb800 100%);
+  color:#fff;
+  display:flex;flex-direction:column;
+  padding:40px 24px calc(30px + env(safe-area-inset-bottom,0px));
+  overflow-y:auto;
+  animation:fadeIn .4s ease;
+}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 
-.img-upload{position:relative;border:2px dashed var(--border);border-radius:14px;padding:16px;text-align:center;background:#fafbfc;cursor:pointer;transition:all .2s;margin-bottom:12px;}
-.img-upload:active{background:#fff1ec;border-color:var(--primary);}
-.img-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
-.img-upload .preview{width:100%;height:120px;border-radius:10px;background-size:cover;background-position:center;margin-bottom:10px;display:none;}
-.img-upload.has-img .preview{display:block;}
-.img-upload.has-img .placeholder{display:none;}
-.img-upload .placeholder{font-size:32px;opacity:.5;}
-.img-upload small{display:block;color:var(--text-soft);font-size:11px;margin-top:6px;}
-.img-upload.loading{opacity:.6;pointer-events:none;}
+.welcome-hero{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:20px 0;
+}
+.welcome-emoji{
+  font-size:90px;margin-bottom:16px;
+  filter:drop-shadow(0 8px 24px rgba(0,0,0,.25));
+  animation:float 3s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+.welcome-title{font-size:36px;font-weight:800;letter-spacing:-.5px;margin:0 0 8px;text-shadow:0 3px 12px rgba(0,0,0,.15);}
+.welcome-sub{font-size:15px;opacity:.95;margin:0 0 28px;line-height:1.5;max-width:340px;}
+.welcome-features{display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px;margin-bottom:24px;}
+.feature-item{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(255,255,255,.15);
+  backdrop-filter:blur(10px);
+  padding:12px 16px;border-radius:14px;
+  font-size:14px;font-weight:500;text-align:left;
+  border:1px solid rgba(255,255,255,.2);
+}
+.feature-item .fe-icon{font-size:22px;}
 
-.progress-bar{height:6px;background:#eceef1;border-radius:3px;overflow:hidden;margin-top:8px;}
-.progress-bar .fill{height:100%;background:var(--primary);transition:width .3s;}
+.welcome-actions{display:flex;flex-direction:column;gap:12px;width:100%;max-width:400px;margin:0 auto;}
+.btn-google{
+  background:#fff;color:#1a1d22;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:15px;border-radius:14px;
+  font-size:15px;font-weight:600;
+  box-shadow:0 6px 20px rgba(0,0,0,.15);
+  transition:transform .15s,box-shadow .2s;
+}
+.btn-google:active{transform:scale(.97);box-shadow:0 4px 12px rgba(0,0,0,.2);}
+.btn-google svg{width:20px;height:20px;}
 
-.order-timeline{display:flex;justify-content:space-between;margin:14px 0;position:relative;padding:0 6px;}
-.order-timeline::before{content:'';position:absolute;top:14px;left:8%;right:8%;height:2px;background:#e5e7eb;z-index:0;}
-.order-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;z-index:1;}
-.order-step .dot{width:28px;height:28px;border-radius:50%;background:#e5e7eb;color:#9ca3af;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .3s;}
-.order-step.done .dot{background:var(--primary);color:#fff;}
-.order-step.active .dot{background:var(--primary);color:#fff;box-shadow:0 0 0 4px rgba(255,77,46,.2);animation:pulse 1.6s infinite;}
-.order-step small{font-size:10px;color:var(--text-soft);text-align:center;font-weight:600;}
-.order-step.done small,.order-step.active small{color:var(--primary);}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(255,77,46,.2);}50%{box-shadow:0 0 0 8px rgba(255,77,46,.05);}}
+.btn-email{
+  background:rgba(255,255,255,.18);
+  color:#fff;border:1.5px solid rgba(255,255,255,.4);
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:15px;border-radius:14px;
+  font-size:15px;font-weight:600;
+  backdrop-filter:blur(10px);
+  transition:transform .15s,background .2s;
+}
+.btn-email:active{transform:scale(.97);background:rgba(255,255,255,.25);}
 
-.order-card-user{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow-sm);}
-.order-card-user .order-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.order-card-user .order-biz{font-size:12px;color:var(--text-soft);margin-bottom:10px;}
-.order-card-user .order-items{font-size:12px;color:var(--text-soft);margin:8px 0;padding:8px 10px;background:#fafbfc;border-radius:8px;line-height:1.5;}
-.order-card-user .order-total{display:flex;justify-content:space-between;font-size:14px;font-weight:700;margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);}
+.welcome-login-link{color:#fff;text-align:center;font-size:14px;margin-top:18px;opacity:.95;}
+.welcome-login-link strong{text-decoration:underline;cursor:pointer;font-weight:700;}
+.welcome-terms{text-align:center;font-size:11px;opacity:.75;margin-top:20px;line-height:1.5;max-width:340px;align-self:center;}
 
-.vendor-order{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow-sm);border-left:4px solid var(--primary);}
-.vendor-order.preparing{border-left-color:#f59e0b;}
-.vendor-order.onway{border-left-color:#6366f1;}
-.vendor-order.delivered{border-left-color:#16a34a;}
-.vendor-order.cancelled{border-left-color:#dc2626;opacity:.7;}
-.vendor-order .vo-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
-.vendor-order .vo-customer{font-size:12px;color:var(--text-soft);margin-bottom:8px;line-height:1.5;}
-.vendor-order .vo-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
-.vendor-order .vo-actions .btn{flex:1;min-width:100px;padding:8px 10px;font-size:12px;}
+.auth-screen{
+  position:fixed;inset:0;z-index:100;
+  background:#fff;
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+  animation:slideIn .3s ease;
+}
+@keyframes slideIn{from{transform:translateX(100%);}to{transform:translateX(0);}}
 
-.splash{position:fixed;inset:0;z-index:9999;background:linear-gradient(160deg,var(--primary),#ff7a55);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .4s;}
-.splash.hide{opacity:0;pointer-events:none;}
-.splash-logo{font-size:68px;animation:pop .6s ease;}
-.splash h1{margin:0;font-size:32px;letter-spacing:1px;}
-.splash-loader{width:40px;height:40px;margin-top:12px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-@keyframes pop{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
+.auth-header{
+  display:flex;align-items:center;gap:12px;
+  padding:20px 20px 12px;
+  background:#fff;
+  position:sticky;top:0;z-index:10;
+}
+.auth-back{
+  width:40px;height:40px;border-radius:50%;
+  background:#f1f3f6;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;color:var(--text);
+}
+.auth-header h2{margin:0;font-size:18px;}
 
-.app{min-height:100vh;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;}
-.app-header{position:sticky;top:0;z-index:50;background:var(--primary);color:#fff;padding:14px 16px 16px;border-radius:0 0 22px 22px;box-shadow:var(--shadow-md);}
-.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-.location{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 8px;border-radius:10px;transition:background .2s;}
-.location:active{background:rgba(255,255,255,.15);}
-.location small{opacity:.85;font-size:11px;display:block;}
-.location strong{font-size:14px;}
-.loc-icon{font-size:18px;}
-.chev{opacity:.8;font-size:12px;}
-.icon-btn{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;transition:transform .15s;position:relative;}
-.icon-btn:active{transform:scale(.92);}
-.notif-badge{position:absolute;top:-2px;right:-2px;background:#dc2626;color:#fff;font-size:10px;padding:1px 5px;border-radius:20px;min-width:16px;text-align:center;font-weight:700;border:2px solid var(--primary);}
-.search-bar{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;padding:12px 14px;box-shadow:var(--shadow-sm);}
-.search-bar span{font-size:16px;}
-.search-bar input{flex:1;border:none;outline:none;background:transparent;font-size:15px;color:var(--text);cursor:text;min-width:0;}
-.search-bar .clear-btn{width:22px;height:22px;border-radius:50%;background:#e5e7eb;color:#6b7280;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-
-.app-main{flex:1;padding:16px 0 24px;}
-.section{margin-bottom:26px;padding:0 16px;}
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-.section-head h2{margin:0;font-size:17px;font-weight:700;display:flex;align-items:center;gap:6px;}
-.section-head button{color:var(--primary);font-size:13px;font-weight:600;}
-
-.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
-.cat-card{background:var(--surface);border-radius:var(--radius-sm);padding:14px 8px;text-align:center;box-shadow:var(--shadow-sm);transition:transform .15s,box-shadow .2s;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
-.cat-card:active{transform:scale(.95);box-shadow:var(--shadow-md);}
-.cat-card .emoji{font-size:26px;}
-.cat-card small{font-size:11px;font-weight:600;color:var(--text-soft);line-height:1.2;}
-
-.hscroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none;}
-.hscroll::-webkit-scrollbar{display:none;}
-
-.biz-card{flex:0 0 260px;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;transition:transform .15s,box-shadow .2s;cursor:pointer;}
-.biz-card:active{transform:scale(.98);box-shadow:var(--shadow-md);}
-.biz-card .biz-img{height:130px;background-size:cover;background-position:center;position:relative;display:flex;align-items:center;justify-content:center;font-size:46px;overflow:hidden;}
-.biz-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.6);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;backdrop-filter:blur(6px);z-index:2;}
-.biz-badge.open{background:var(--success);}
-.biz-badge.closed{background:var(--danger);}
-.biz-offer{position:absolute;top:10px;right:10px;background:var(--accent);color:#000;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;z-index:2;}
-.biz-body{padding:12px;}
-.biz-name{font-weight:700;font-size:15px;margin:0 0 4px;}
-.biz-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-soft);margin-bottom:8px;flex-wrap:wrap;}
-.biz-meta .star{color:var(--accent);font-weight:700;}
-.biz-tags{display:flex;flex-wrap:wrap;gap:6px;}
-.tag{font-size:10px;padding:3px 8px;border-radius:20px;background:#f1f3f6;color:var(--text-soft);font-weight:600;}
-.tag.primary{background:#fff1ec;color:var(--primary);}
-
-.biz-row{display:flex;gap:12px;background:var(--surface);border-radius:var(--radius);padding:12px;margin-bottom:10px;box-shadow:var(--shadow-sm);transition:transform .15s;cursor:pointer;}
-.biz-row:active{transform:scale(.99);}
-.biz-thumb{width:72px;height:72px;border-radius:12px;background:linear-gradient(135deg,#ffe4d6,#ffd0bd);display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0;overflow:hidden;}
-.biz-info{flex:1;min-width:0;}
-.biz-info h3{margin:0 0 4px;font-size:15px;}
-.biz-info p{margin:0 0 6px;font-size:12px;color:var(--text-soft);}
-
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 18px;border-radius:12px;font-size:14px;font-weight:600;transition:transform .15s,box-shadow .2s;}
-.btn:active{transform:scale(.97);}
-.btn-primary{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(255,77,46,.3);}
-.btn-primary:disabled{opacity:.5;}
-.btn-outline{background:transparent;border:1.5px solid var(--primary);color:var(--primary);}
-.btn-ghost{background:#f1f3f6;color:var(--text);}
-.btn-success{background:var(--success);color:#fff;}
-.btn-danger{background:var(--danger);color:#fff;}
-.btn-block{width:100%;}
-.btn-sm{padding:8px 12px;font-size:12px;}
-
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:60;height:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);background:var(--surface);display:flex;border-top:1px solid var(--border);box-shadow:0 -4px 20px rgba(0,0,0,.05);}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--text-soft);font-size:10px;font-weight:600;transition:color .2s;position:relative;}
-.nav-item .nav-icon{font-size:20px;transition:transform .2s;}
-.nav-item.active{color:var(--primary);}
-.nav-item.active .nav-icon{transform:scale(1.1);}
-.badge{position:absolute;top:6px;right:22%;background:var(--primary);color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center;font-weight:700;}
-.badge.bounce{animation:bounce .5s;}
-@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}
-
-.modal{position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;justify-content:center;}
-.modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.5);}
-.modal-content{position:relative;z-index:1;background:#fff;width:100%;max-width:500px;border-radius:22px 22px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom,0px));max-height:88vh;overflow-y:auto;animation:slideUp .3s ease;}
-@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
-.modal h3{margin:0 0 8px;font-size:19px;}
-.modal p{margin:0 0 16px;color:var(--text-soft);font-size:14px;line-height:1.5;}
-.modal-actions{display:flex;gap:10px;margin-top:18px;}
-.modal-actions .btn{flex:1;}
-
-.product-detail-hero{width:100%;height:200px;border-radius:18px;background:linear-gradient(135deg,#fff3e8,#ffe0cc);display:flex;align-items:center;justify-content:center;font-size:110px;margin-bottom:16px;overflow:hidden;}
-.product-detail h2{margin:0 0 8px;font-size:22px;}
-.product-detail .desc{color:var(--text-soft);font-size:14px;line-height:1.5;margin:0 0 16px;}
-.product-detail .price-big{font-size:26px;font-weight:800;color:var(--text);}
-.product-detail .price-big .old{font-size:15px;color:var(--text-soft);text-decoration:line-through;margin-left:8px;font-weight:400;}
-.product-detail .qty-row{display:flex;align-items:center;justify-content:space-between;margin:18px 0 6px;padding:12px 0;border-top:1px dashed var(--border);border-bottom:1px dashed var(--border);}
-.product-detail .qty-row>span{font-weight:600;font-size:15px;color:var(--text);}
-.product-detail .qty-ctrl{display:flex;align-items:center;gap:12px;background:var(--primary);color:#fff;border-radius:24px;padding:4px;}
-.product-detail .qty-ctrl button{width:34px;height:34px;border-radius:50%;color:#fff;font-size:20px;font-weight:700;}
-.product-detail .qty-ctrl span{font-size:16px;font-weight:700;min-width:24px;text-align:center;color:#fff;}
-
-.toast{position:fixed;bottom:calc(var(--nav-h) + 16px);left:50%;transform:translateX(-50%);background:#1a1d22;color:#fff;padding:12px 20px;border-radius:30px;font-size:13px;font-weight:500;z-index:300;box-shadow:var(--shadow-lg);animation:toastIn .3s ease;max-width:90%;}
-@keyframes toastIn{from{opacity:0;transform:translate(-50%,20px);}to{opacity:1;transform:translate(-50%,0);}}
-
-.menu-header{background:linear-gradient(160deg,var(--primary),#ff7a55);color:#fff;padding:20px 16px;border-radius:0 0 22px 22px;margin-bottom:16px;position:relative;overflow:hidden;}
-.back-btn{background:rgba(255,255,255,.2);color:#fff;width:38px;height:38px;border-radius:50%;font-size:18px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;}
-.menu-header h1{margin:0 0 6px;font-size:22px;}
-.menu-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;opacity:.95;margin-top:8px;}
-
-.tabs{display:flex;gap:8px;overflow-x:auto;padding:0 16px 10px;scrollbar-width:none;}
-.tabs::-webkit-scrollbar{display:none;}
-.tab{padding:8px 16px;border-radius:20px;background:#fff;color:var(--text-soft);font-size:13px;font-weight:600;white-space:nowrap;border:1.5px solid var(--border);transition:all .2s;}
-.tab.active{background:var(--primary);color:#fff;border-color:var(--primary);}
-
-.product{display:flex;gap:12px;background:#fff;border-radius:var(--radius);padding:12px;margin-bottom:10px;box-shadow:var(--shadow-sm);cursor:pointer;transition:transform .15s;}
-.product:active{transform:scale(.99);}
-.product-img{width:84px;height:84px;border-radius:12px;background:linear-gradient(135deg,#fff3e8,#ffe0cc);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;overflow:hidden;}
-.product-info{flex:1;display:flex;flex-direction:column;min-width:0;}
-.product-info h4{margin:0 0 4px;font-size:15px;}
-.product-info p{margin:0 0 8px;font-size:12px;color:var(--text-soft);line-height:1.4;}
-.product-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
-.price{font-weight:700;font-size:15px;}
-.price-old{font-size:12px;color:var(--text-soft);text-decoration:line-through;margin-left:6px;font-weight:400;}
-.add-btn{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(255,77,46,.35);flex-shrink:0;position:relative;z-index:5;}
-.qty-ctrl{display:flex;align-items:center;gap:8px;background:var(--primary);color:#fff;border-radius:20px;padding:2px;position:relative;z-index:5;}
-.qty-ctrl button{width:30px;height:30px;border-radius:50%;color:#fff;font-size:16px;font-weight:700;}
-.qty-ctrl span{font-size:14px;font-weight:700;min-width:18px;text-align:center;}
-
-.cart-item{display:flex;gap:12px;align-items:center;background:#fff;padding:12px;border-radius:var(--radius);margin-bottom:10px;box-shadow:var(--shadow-sm);}
-.cart-item-img{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,#fff3e8,#ffe0cc);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden;background-size:cover;background-position:center;}
-.cart-item-info{flex:1;min-width:0;}
-.cart-item-info h4{margin:0 0 3px;font-size:14px;}
-.cart-item-info small{color:var(--text-soft);font-size:12px;}
-.summary{background:#fff;padding:16px;border-radius:var(--radius);box-shadow:var(--shadow-sm);margin:16px;}
-.summary-row{display:flex;justify-content:space-between;font-size:14px;padding:6px 0;color:var(--text-soft);}
-.summary-row.total{border-top:1px dashed var(--border);margin-top:8px;padding-top:12px;color:var(--text);font-weight:700;font-size:17px;}
-
-.coupon-box{display:flex;gap:8px;margin-top:12px;}
-.coupon-box input{flex:1;padding:10px 12px;border:1.5px dashed var(--border);border-radius:12px;background:#fafbfc;outline:none;text-transform:uppercase;font-size:14px;}
-.coupon-box input:focus{border-color:var(--primary);background:#fff;}
-.coupon-tag{display:inline-flex;align-items:center;gap:6px;background:#dcfce7;color:#166534;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700;margin-top:10px;}
-.coupon-tag button{color:#166534;font-weight:700;font-size:14px;padding:0 2px;}
-
-.stars{display:flex;gap:4px;}
-.star-btn{font-size:30px;color:#d1d5db;line-height:1;padding:0;transition:transform .1s,color .15s;}
-.star-btn.active{color:var(--accent);}
-.star-btn:active{transform:scale(.9);}
-.review-card{background:#fff;border-radius:12px;padding:12px;margin-bottom:8px;box-shadow:var(--shadow-sm);}
-.review-stars{color:var(--accent);letter-spacing:1px;font-size:14px;}
-
-.search-results .group-title{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-soft);font-weight:700;margin:16px 16px 8px;}
-
-.empty{text-align:center;padding:50px 24px;}
-.empty .emoji{font-size:60px;margin-bottom:12px;display:block;}
-.empty h3{margin:0 0 6px;}
-.empty p{color:var(--text-soft);font-size:14px;margin:0 0 18px;}
+.auth-body{padding:12px 24px 32px;flex:1;}
+.auth-body .auth-title{text-align:center;margin:0 0 8px;font-size:26px;font-weight:800;}
+.auth-body .auth-desc{text-align:center;color:var(--text-soft);margin:0 0 26px;font-size:14px;line-height:1.5;}
 
 .form-group{margin-bottom:14px;}
-.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;}
-.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;background:#fafbfc;outline:none;transition:border-color .2s;}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text);}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;padding:14px 16px;
+  border:1.5px solid var(--border);border-radius:14px;
+  background:#fafbfc;outline:none;
+  transition:border-color .2s,background .2s;
+  font-size:15px;
+}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--primary);background:#fff;}
-.form-group.error input,.form-group.error select,.form-group.error textarea{border-color:var(--danger);background:#fef2f2;}
-.form-group .hint{font-size:11px;color:var(--text-soft);margin-top:4px;}
-.form-group .err{font-size:11px;color:var(--danger);margin-top:4px;display:none;}
-.form-group.error .err{display:block;}
-.chip-select{display:flex;flex-wrap:wrap;gap:8px;}
-.chip{padding:8px 14px;border-radius:20px;background:#f1f3f6;color:var(--text-soft);font-size:13px;font-weight:600;transition:all .2s;}
-.chip.active{background:var(--primary);color:#fff;}
+.form-group .hint{font-size:11px;color:var(--text-soft);margin-top:4px;display:block;}
 
-.status{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:700;}
-.status.pending{background:#fef3c7;color:#92400e;}
-.status.confirmed{background:#dbeafe;color:#1e40af;}
-.status.preparing{background:#fed7aa;color:#9a3412;}
-.status.onway{background:#e0e7ff;color:#3730a3;}
-.status.delivered{background:#dcfce7;color:#166534;}
-.status.cancelled{background:#fee2e2;color:#991b1b;}
-.status.pending_approval{background:#fef3c7;color:#92400e;}
-.status.approved{background:#dcfce7;color:#166534;}
-.status.rejected{background:#fee2e2;color:#991b1b;}
-.status.suspended{background:#e5e7eb;color:#374151;}
-
-.menu-item{display:flex;width:100%;align-items:center;gap:12px;padding:16px;font-size:15px;text-align:left;border-bottom:1px solid #eceef1;background:transparent;}
-.menu-item:last-child{border-bottom:none;}
-
-.floating-bar{position:fixed;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));left:0;right:0;padding:12px 16px;background:transparent;pointer-events:none;z-index:55;}
-.floating-bar .btn{pointer-events:auto;box-shadow:0 8px 24px rgba(255,77,46,.4);}
-
-.promo-section{padding:0 16px !important;margin-top:16px;margin-bottom:22px;}
-.carousel{position:relative;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-md);}
-.carousel-track{display:flex;transition:transform .45s cubic-bezier(.4,0,.2,1);will-change:transform;}
-.promo-slide{flex:0 0 100%;min-height:150px;padding:18px 20px;color:#fff;display:flex;align-items:center;gap:14px;position:relative;cursor:pointer;overflow:hidden;}
-.promo-slide::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 90% 20%,rgba(255,255,255,.18),transparent 60%);pointer-events:none;}
-.promo-emoji{font-size:52px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25));flex-shrink:0;}
-.promo-text{flex:1;min-width:0;position:relative;z-index:1;}
-.promo-text h3{margin:0 0 4px;font-size:18px;font-weight:800;line-height:1.2;text-shadow:0 2px 4px rgba(0,0,0,.2);}
-.promo-text p{margin:0 0 6px;font-size:13px;opacity:.95;}
-.promo-biz{display:inline-block;font-size:11px;background:rgba(255,255,255,.22);padding:3px 10px;border-radius:20px;backdrop-filter:blur(6px);font-weight:600;}
-.promo-badge{position:absolute;top:10px;right:10px;background:#fff;color:#ff4d2e;font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;letter-spacing:.5px;box-shadow:0 2px 6px rgba(0,0,0,.15);}
-.carousel-dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:2;}
-.promo-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5);transition:all .3s;cursor:pointer;border:none;}
-.promo-dot.active{background:#fff;width:20px;border-radius:3px;}
-
-.admin-badge{display:inline-block;background:#1e293b;color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:.5px;margin-left:6px;}
-.loading-overlay{position:fixed;inset:0;z-index:500;background:rgba(255,255,255,.85);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;}
-.loading-overlay .spinner{width:44px;height:44px;border:4px solid #eceef1;border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;}
-
-@media (min-width:640px){
-  .app-main{max-width:720px;margin:0 auto;width:100%;}
-  .bottom-nav{max-width:720px;left:50%;transform:translateX(-50%);border-radius:20px 20px 0 0;}
-  .app-header{max-width:720px;margin:0 auto;border-radius:0 0 22px 22px;}
-  .cat-grid{grid-template-columns:repeat(6,1fr);}
-  .biz-card{flex:0 0 280px;}
-  .floating-bar{max-width:720px;left:50%;transform:translateX(-50%);}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:15px 20px;border-radius:14px;
+  font-size:15px;font-weight:600;
+  transition:transform .15s,box-shadow .2s;
+  width:100%;
 }
-@media (min-width:1024px){
-  .app-main,.bottom-nav,.app-header,.floating-bar{max-width:900px;}
-  .cat-grid{grid-template-columns:repeat(7,1fr);}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 6px 20px rgba(255,77,46,.35);}
+.btn-primary:active{box-shadow:0 4px 12px rgba(255,77,46,.4);}
+.btn-primary:disabled{opacity:.55;cursor:not-allowed;}
+.btn-outline{background:transparent;border:1.5px solid var(--primary);color:var(--primary);}
+.btn-ghost{background:#f1f3f6;color:var(--text);}
+
+.divider{display:flex;align-items:center;gap:12px;margin:22px 0;color:var(--text-soft);font-size:12px;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.btn-google-inline{
+  background:#fff;color:#1a1d22;
+  border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:14px;border-radius:14px;
+  font-size:14px;font-weight:600;
+  width:100%;
+  transition:background .2s;
 }
-@media (display-mode:standalone){
-  .app-header{padding-top:calc(14px + env(safe-area-inset-top,0px));}
+.btn-google-inline:active{background:#f7f8fa;}
+.btn-google-inline svg{width:18px;height:18px;}
+
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0 24px;}
+.role-card{
+  background:#fff;border:2px solid var(--border);border-radius:16px;
+  padding:20px 12px;text-align:center;cursor:pointer;
+  transition:all .2s;
 }
+.role-card:active{transform:scale(.97);}
+.role-card.selected{border-color:var(--primary);background:#fff1ec;box-shadow:0 6px 20px rgba(255,77,46,.15);}
+.role-card .role-emoji{font-size:42px;margin-bottom:8px;display:block;}
+.role-card h4{margin:0 0 4px;font-size:15px;font-weight:700;color:var(--text);}
+.role-card p{margin:0;font-size:11px;color:var(--text-soft);line-height:1.4;}
+
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:#1a1d22;color:#fff;
+  padding:12px 22px;border-radius:30px;
+  font-size:13px;font-weight:500;
+  z-index:9999;box-shadow:var(--shadow-lg);
+  animation:toastIn .3s ease;max-width:90%;
+}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,20px);}to{opacity:1;transform:translate(-50%,0);}}
+
+.loading-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.4);
+  display:flex;align-items:center;justify-content:center;
+  z-index:9998;backdrop-filter:blur(4px);
+}
+.loading-spinner{
+  width:44px;height:44px;
+  border:3px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.link{color:var(--primary);font-weight:600;cursor:pointer;text-decoration:underline;}
+
+.pwd-strength{display:flex;gap:4px;margin-top:6px;}
+.pwd-strength span{flex:1;height:4px;border-radius:2px;background:#eceef1;transition:background .2s;}
+.pwd-strength.weak span:nth-child(1){background:#dc2626;}
+.pwd-strength.medium span:nth-child(-n+2){background:#f59e0b;}
+.pwd-strength.strong span{background:#16a34a;}
 </style>
 </head>
 <body>
 
-<div id="splash" class="splash">
-  <div class="splash-logo">🛍️</div>
-  <h1>Mercadito</h1>
-  <div class="splash-loader"></div>
-</div>
+<!-- PANTALLA 1: BIENVENIDA -->
+<div id="welcomeScreen" class="welcome-screen">
+  <div class="welcome-hero">
+    <div class="welcome-emoji">🛍️</div>
+    <h1 class="welcome-title">Mercadito</h1>
+    <p class="welcome-sub">Descubre los mejores negocios locales de tu ciudad, compara precios y pide por WhatsApp.</p>
 
-<div id="app" class="app hidden">
-  <header class="app-header">
-    <div class="header-top">
-      <div class="location" id="locationBtn">
-        <span class="loc-icon">📍</span>
-        <div>
-          <small>Enviar a</small>
-          <strong id="locationText">Selecciona ubicación</strong>
-        </div>
-        <span class="chev">▾</span>
-      </div>
-      <button class="icon-btn" id="notifBtn">
-        🔔
-        <span class="notif-badge hidden" id="notifBadge">0</span>
-      </button>
+    <div class="welcome-features">
+      <div class="feature-item"><span class="fe-icon">📍</span> Encuentra negocios cerca de ti</div>
+      <div class="feature-item"><span class="fe-icon">⚡</span> Pide directo por WhatsApp</div>
+      <div class="feature-item"><span class="fe-icon">🔥</span> Compara precios y ofertas</div>
     </div>
-    <div class="search-bar" id="searchBar">
-      <span>🔎</span>
-      <input type="text" id="globalSearch" placeholder="Buscar negocios, productos..." autocomplete="off" />
-      <button class="clear-btn hidden" id="clearSearch">✕</button>
-    </div>
-  </header>
+  </div>
 
-  <main class="app-main" id="appMain"></main>
-
-  <nav class="bottom-nav">
-    <button class="nav-item active" data-view="home"><span class="nav-icon">🏠</span><small>Inicio</small></button>
-    <button class="nav-item" data-view="search"><span class="nav-icon">🔎</span><small>Buscar</small></button>
-    <button class="nav-item" data-view="categories"><span class="nav-icon">📂</span><small>Categorías</small></button>
-    <button class="nav-item" data-view="cart">
-      <span class="nav-icon">🛒</span><small>Carrito</small>
-      <span class="badge hidden" id="cartBadge">0</span>
+  <div class="welcome-actions">
+    <button class="btn-google" id="btnGoogleWelcome">
+      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Continuar con Google
     </button>
-    <button class="nav-item" data-view="account"><span class="nav-icon">👤</span><small>Cuenta</small></button>
-  </nav>
+
+    <button class="btn-email" id="btnEmailWelcome">✉️ Continuar con correo</button>
+  </div>
+
+  <div class="welcome-login-link">
+    ¿Ya tienes cuenta? <strong id="btnGoLogin">Inicia sesión</strong>
+  </div>
+
+  <p class="welcome-terms">
+    Al continuar aceptas nuestros <strong>Términos y Condiciones</strong> y <strong>Aviso de Privacidad</strong>.
+  </p>
 </div>
 
-<div class="modal hidden" id="modal">
-  <div class="modal-backdrop" data-close-modal></div>
-  <div class="modal-content" id="modalContent"></div>
+<!-- PANTALLA 2: ROL -->
+<div id="roleScreen" class="auth-screen hidden">
+  <div class="auth-header">
+    <button class="auth-back" data-close-auth>←</button>
+    <h2>Crear cuenta</h2>
+  </div>
+  <div class="auth-body">
+    <h2 class="auth-title">¿Cómo quieres usar Mercadito?</h2>
+    <p class="auth-desc">Selecciona el tipo de cuenta que deseas crear. Puedes cambiarlo después.</p>
+
+    <div class="role-grid">
+      <div class="role-card" data-role="customer">
+        <span class="role-emoji">🛒</span>
+        <h4>Cliente</h4>
+        <p>Quiero comprar a negocios locales</p>
+      </div>
+      <div class="role-card" data-role="vendor">
+        <span class="role-emoji">🏪</span>
+        <h4>Vendedor</h4>
+        <p>Quiero vender mis productos</p>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btnContinueRole" disabled>Continuar</button>
+  </div>
 </div>
 
-<div class="loading-overlay hidden" id="loadingOverlay">
-  <div class="spinner"></div>
+<!-- PANTALLA 3: REGISTRO -->
+<div id="registerScreen" class="auth-screen hidden">
+  <div class="auth-header">
+    <button class="auth-back" data-close-auth>←</button>
+    <h2>Registro</h2>
+  </div>
+  <div class="auth-body">
+    <h2 class="auth-title" id="registerTitle">Crear cuenta</h2>
+    <p class="auth-desc" id="registerDesc">Completa tus datos para comenzar</p>
+
+    <div class="form-group">
+      <label>Nombre completo</label>
+      <input type="text" id="regName" placeholder="Tu nombre" autocomplete="name" />
+    </div>
+
+    <div class="form-group">
+      <label>Correo electrónico</label>
+      <input type="email" id="regEmail" placeholder="tucorreo@ejemplo.com" autocomplete="email" />
+    </div>
+
+    <div class="form-group">
+      <label>Teléfono</label>
+      <input type="tel" id="regPhone" placeholder="55 1234 5678" autocomplete="tel" />
+    </div>
+
+    <div class="form-group" id="regPwdGroup">
+      <label>Contraseña</label>
+      <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
+      <div class="pwd-strength" id="pwdStrength"><span></span><span></span><span></span></div>
+      <span class="hint">Usa mayúsculas, números y símbolos para mayor seguridad</span>
+    </div>
+
+    <div id="vendorExtraFields" class="hidden">
+      <div class="form-group">
+        <label>Nombre del negocio</label>
+        <input type="text" id="regBizName" placeholder="Ej: Burger House" />
+      </div>
+      <div class="form-group">
+        <label>WhatsApp del negocio (con LADA 52)</label>
+        <input type="tel" id="regWhatsapp" placeholder="5215551234567" />
+      </div>
+      <div class="form-group">
+        <label>Categoría principal</label>
+        <select id="regCategory">
+          <option value="hamburguesas">🍔 Hamburguesas</option>
+          <option value="tacos">🌮 Tacos</option>
+          <option value="pizzas">🍕 Pizzas</option>
+          <option value="pollo">🍗 Pollo</option>
+          <option value="sushi">🍣 Sushi</option>
+          <option value="bebidas">🥤 Bebidas</option>
+          <option value="postres">🍰 Postres</option>
+          <option value="cafeterias">☕ Cafeterías</option>
+          <option value="carnes">🥩 Carnes</option>
+          <option value="mexicana">🌯 Comida mexicana</option>
+          <option value="rapida">🍟 Comida rápida</option>
+          <option value="abarrotes">🛒 Abarrotes</option>
+          <option value="farmacias">💊 Farmacias</option>
+          <option value="otros">🌸 Otros</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Dirección del negocio</label>
+        <input type="text" id="regBizAddress" placeholder="Calle, número, colonia" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer">
+        <input type="checkbox" id="regTerms" style="width:auto;" />
+        Acepto los términos y condiciones
+      </label>
+    </div>
+
+    <button class="btn btn-primary" id="btnRegister">Crear cuenta</button>
+
+    <div class="divider">o</div>
+
+    <button class="btn-google-inline" id="btnGoogleRegister">
+      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Registrarme con Google
+    </button>
+  </div>
+</div>
+
+<!-- PANTALLA 4: LOGIN -->
+<div id="loginScreen" class="auth-screen hidden">
+  <div class="auth-header">
+    <button class="auth-back" data-close-auth>←</button>
+    <h2>Iniciar sesión</h2>
+  </div>
+  <div class="auth-body">
+    <h2 class="auth-title">¡Hola de nuevo! 👋</h2>
+    <p class="auth-desc">Ingresa tus datos para continuar</p>
+
+    <div class="form-group">
+      <label>Correo electrónico</label>
+      <input type="email" id="loginEmail" placeholder="tucorreo@ejemplo.com" autocomplete="email" />
+    </div>
+
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="loginPassword" placeholder="Tu contraseña" autocomplete="current-password" />
+    </div>
+
+    <div style="text-align:right;margin-bottom:20px">
+      <span class="link" id="forgotPwd">¿Olvidaste tu contraseña?</span>
+    </div>
+
+    <button class="btn btn-primary" id="btnLogin">Iniciar sesión</button>
+
+    <div class="divider">o</div>
+
+    <button class="btn-google-inline" id="btnGoogleLogin">
+      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Iniciar sesión con Google
+    </button>
+
+    <p style="text-align:center;margin-top:24px;font-size:14px;color:var(--text-soft)">
+      ¿No tienes cuenta? <span class="link" id="goRegister">Regístrate</span>
+    </p>
+  </div>
 </div>
 
 <div class="toast hidden" id="toast"></div>
 
 <script type="module">
 /* ============================================================
-   🔥 FIREBASE CONFIG — REEMPLAZA CON TUS DATOS
+   🔥 FIREBASE CONFIG
    ============================================================ */
-   const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyDRrMSAzEHF7QhHkbvwFK3O7mfrt9gqmsc",
   authDomain: "mercadito-dcf8e.firebaseapp.com",
   projectId: "mercadito-dcf8e",
@@ -371,2761 +411,357 @@ img{max-width:100%;display:block;}
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getAuth, onAuthStateChanged, signOut
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail,
+  onAuthStateChanged, updateProfile, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
-  getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc,
-  query, where, orderBy, limit, onSnapshot, serverTimestamp, writeBatch
+  getFirestore, doc, getDoc, setDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import {
-  getStorage, ref as sRef, uploadBytes, getDownloadURL, deleteObject
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-const fbApp = initializeApp(FIREBASE_CONFIG);
+const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
-const storage = getStorage(fbApp);
+const googleProvider = new GoogleAuthProvider();
 
 /* ============================================================
-   CONSTANTES
+   AUTH UI
    ============================================================ */
-const ZONES = [
-  { id:'rio-medio-3', name:'Fraccionamiento Río Medio 3' },
-  { id:'torrentes', name:'Torrentes' },
-  { id:'bosques-rio-medio-4', name:'Bosques de Río Medio 4' }
-];
-const ZONE_NAMES = ZONES.map(z => z.name);
-
-const BIZ_STATUS = {
-  pending:  { label:'🟡 Pendiente',  cls:'pending_approval' },
-  approved: { label:'🟢 Aprobado',   cls:'approved' },
-  rejected: { label:'🔴 Rechazado',  cls:'rejected' },
-  suspended:{ label:'⏸️ Suspendido', cls:'suspended' }
-};
-
-/* ============================================================
-   UTILS
-   ============================================================ */
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const money = n => `$${Number(n || 0).toFixed(0)}`;
-
-/* ============================================================
-   IMAGE UTILS
-   ============================================================ */
-const ImageUtils = (() => {
-  const MAX_SIZE_KB = 200;
-  const MAX_DIMENSION = 1200;
-  const HARD_LIMIT_MB = 10;
-
-  async function compress(file, opts = {}){
-    const maxKB = opts.maxKB || MAX_SIZE_KB;
-    const maxDim = opts.maxDim || MAX_DIMENSION;
-    if(!file.type.startsWith('image/')) throw new Error('El archivo no es una imagen');
-    if(file.size > HARD_LIMIT_MB * 1024 * 1024) throw new Error(`La imagen supera los ${HARD_LIMIT_MB}MB`);
-
-    const img = await loadImage(file);
-    let { width, height } = img;
-    if(width > maxDim || height > maxDim){
-      const ratio = Math.min(maxDim / width, maxDim / height);
-      width = Math.round(width * ratio);
-      height = Math.round(height * ratio);
-    }
-    const canvas = document.createElement('canvas');
-    canvas.width = width; canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, width, height);
-    ctx.drawImage(img, 0, 0, width, height);
-
-    let quality = 0.85;
-    let blob = await canvasToBlob(canvas, 'image/webp', quality);
-    if(!blob || blob.size === 0) blob = await canvasToBlob(canvas, 'image/jpeg', quality);
-
-    while(blob.size > maxKB * 1024 && quality > 0.3){
-      quality -= 0.1;
-      blob = await canvasToBlob(canvas, 'image/webp', quality);
-      if(!blob || blob.size === 0) blob = await canvasToBlob(canvas, 'image/jpeg', quality);
-    }
-    let scale = 0.85;
-    while(blob.size > maxKB * 1024 && scale > 0.3){
-      const c2 = document.createElement('canvas');
-      c2.width = Math.round(width * scale);
-      c2.height = Math.round(height * scale);
-      const cx = c2.getContext('2d');
-      cx.imageSmoothingQuality = 'high';
-      cx.fillStyle = '#ffffff';
-      cx.fillRect(0, 0, c2.width, c2.height);
-      cx.drawImage(canvas, 0, 0, c2.width, c2.height);
-      blob = await canvasToBlob(c2, 'image/webp', quality);
-      if(!blob || blob.size === 0) blob = await canvasToBlob(c2, 'image/jpeg', quality);
-      scale -= 0.15;
-    }
-    const dataUrl = await blobToDataURL(blob);
-    return { blob, dataUrl, size: blob.size, width, height };
-  }
-
-  function loadImage(file){
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = e => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error('No se pudo leer la imagen'));
-        img.src = e.target.result;
-      };
-      reader.onerror = () => reject(new Error('Error leyendo el archivo'));
-      reader.readAsDataURL(file);
-    });
-  }
-  function canvasToBlob(canvas, type, quality){
-    return new Promise(resolve => {
-      try { canvas.toBlob(b => resolve(b), type, quality); }
-      catch(e){ resolve(null); }
-    });
-  }
-  function blobToDataURL(blob){
-    return new Promise((resolve, reject) => {
-      const r = new FileReader();
-      r.onload = () => resolve(r.result);
-      r.onerror = reject;
-      r.readAsDataURL(blob);
-    });
-  }
-
-  async function uploadToStorage(blob, path){
-    const fileRef = sRef(storage, path);
-    await uploadBytes(fileRef, blob, { contentType: blob.type || 'image/webp' });
-    return await getDownloadURL(fileRef);
-  }
-
-  function bindUpload(input, previewEl, wrapper, opts = {}){
-    input.addEventListener('change', async e => {
-      const file = e.target.files[0];
-      if(!file) return;
-      wrapper.classList.add('loading');
-      try{
-        const result = await compress(file);
-        previewEl.style.backgroundImage = `url(${result.dataUrl})`;
-        wrapper.classList.add('has-img');
-        wrapper.dataset.blobUrl = result.dataUrl;
-        wrapper.dataset.pendingBlob = 'true';
-        wrapper._blob = result.blob;
-        App.toast(`✅ Comprimida: ${(file.size/1024).toFixed(0)}KB → ${(result.size/1024).toFixed(0)}KB`);
-        if(opts.onDone) opts.onDone(result);
-      }catch(err){
-        App.toast('❌ ' + err.message);
-      }finally{
-        wrapper.classList.remove('loading');
-      }
-    });
-  }
-
-  function uploadBox(id, label, currentUrl = '', opts = {}){
-    return `
-      <div class="form-group">
-        <label>${esc(label)}</label>
-        <div class="img-upload ${currentUrl?'has-img':''}" id="${id}" ${currentUrl ? `data-existing="${esc(currentUrl)}"` : ''}>
-          <input type="file" accept="image/*" />
-          <div class="preview" style="${currentUrl ? `background-image:url(${esc(currentUrl)});` : ''}"></div>
-          <div class="placeholder">📷</div>
-          <div style="font-weight:600;font-size:13px;margin-top:4px">Toca para subir</div>
-          <small>JPG, PNG o WebP · se comprime automáticamente</small>
-        </div>
-      </div>`;
-  }
-
-  function setup(id, opts = {}){
-    const wrapper = document.getElementById(id);
-    if(!wrapper) return;
-    const input = wrapper.querySelector('input[type=file]');
-    const preview = wrapper.querySelector('.preview');
-    bindUpload(input, preview, wrapper, opts);
-  }
-
-  function getPendingBlob(id){
-    const w = document.getElementById(id);
-    return w ? w._blob : null;
-  }
-  function getExistingUrl(id){
-    const w = document.getElementById(id);
-    return w ? (w.dataset.existing || '') : '';
-  }
-  function hasNewImage(id){
-    const w = document.getElementById(id);
-    return w ? w.dataset.pendingBlob === 'true' : false;
-  }
-
-  return { compress, uploadToStorage, uploadBox, setup, getPendingBlob, getExistingUrl, hasNewImage };
-})();
-
-/* ============================================================
-   DB
-   ============================================================ */
-const DB = (() => {
-  const collections = ['businesses','products','orders','reviews','promos','coupons','categories','users'];
-  const cache = {};
-  collections.forEach(c => cache[c] = []);
-
-  async function loadAll(){
-    await Promise.all(collections.map(async c => {
-      try {
-        const snap = await getDocs(collection(db, c));
-        cache[c] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      } catch(e){
-        console.warn('DB load error for', c, e);
-        cache[c] = [];
-      }
-    }));
-  }
-
-  function seedIfEmpty(){ return Promise.resolve(); }
-
-  function get(c){ return cache[c] || []; }
-
-  async function add(c, data, id){
-    const ref = id ? doc(db, c, id) : doc(collection(db, c));
-    const payload = { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
-    await setDoc(ref, payload);
-    return ref.id;
-  }
-  async function update(c, id, data){
-    await updateDoc(doc(db, c, id), { ...data, updatedAt: serverTimestamp() });
-  }
-  async function remove(c, id){
-    await deleteDoc(doc(db, c, id));
-  }
-
-  return { loadAll, seedIfEmpty, get, add, update, remove, cache };
-})();
-
-/* ============================================================
-   AUTH — Firebase Auth real (compartido con bienvenida.html)
-   ============================================================ */
-const Auth = (() => {
-  const KEY_USER = 'mercadito_profile';
-  let currentProfile = null;
-  let redirected = false;
-
-  function profile(){ return currentProfile; }
-  function isAdmin(){ return currentProfile?.role === 'admin'; }
-  function isVendor(){ return currentProfile?.role === 'vendor'; }
-
-  function saveLocal(p){ localStorage.setItem(KEY_USER, JSON.stringify(p)); currentProfile = p; }
-
-  async function init(){
-    return new Promise(resolve => {
-      onAuthStateChanged(auth, async user => {
-        // 🚨 SIN SESIÓN → redirigir a bienvenida
-        if(!user){
-          if(!redirected){
-            redirected = true;
-            window.location.href = 'bienvenida.html';
-          }
-          resolve(null);
-          return;
-        }
-
-        try {
-          const snap = await getDoc(doc(db, 'users', user.uid));
-          if(snap.exists()){
-            const data = snap.data();
-            currentProfile = {
-              uid: user.uid,
-              name: data.name || user.displayName || 'Usuario',
-              email: data.email || user.email || '',
-              phone: data.phone || '',
-              role: data.role || 'customer'
-            };
-            saveLocal(currentProfile);
-
-            // Si es vendor y trae business pendiente, crear negocio automáticamente
-            if(currentProfile.role === 'vendor' && data.business && !data.businessCreated){
-              await autoCreateBusiness(user.uid, data.business, currentProfile);
-            }
-          } else {
-            // Perfil no existe → crearlo básico
-            const payload = {
-              name: user.displayName || 'Usuario',
-              email: user.email || '',
-              phone: '',
-              role: 'customer',
-              createdAt: serverTimestamp()
-            };
-            await setDoc(doc(db, 'users', user.uid), payload);
-            currentProfile = { uid: user.uid, ...payload };
-            saveLocal(currentProfile);
-          }
-        } catch(e){
-          console.error('Auth init error:', e);
-        }
-
-        resolve(currentProfile);
-      });
-    });
-  }
-
-  async function autoCreateBusiness(uid, biz, profile){
-    try {
-      const snap = await getDocs(query(collection(db, 'businesses'), where('ownerId','==', uid)));
-      if(!snap.empty){
-        await setDoc(doc(db, 'users', uid), { businessCreated: true }, { merge: true });
-        return;
-      }
-
-      const catMap = {
-        hamburguesas:{id:'hamburguesas', emoji:'🍔', name:'Hamburguesas'},
-        tacos:{id:'tacos', emoji:'🌮', name:'Tacos'},
-        pizzas:{id:'pizzas', emoji:'🍕', name:'Pizzas'},
-        pollo:{id:'pollo', emoji:'🍗', name:'Pollo'},
-        sushi:{id:'sushi', emoji:'🍣', name:'Sushi'},
-        bebidas:{id:'bebidas', emoji:'🥤', name:'Bebidas'},
-        postres:{id:'postres', emoji:'🍰', name:'Postres'},
-        cafeterias:{id:'cafeterias', emoji:'☕', name:'Cafeterías'},
-        carnes:{id:'carnes', emoji:'🥩', name:'Carnes'},
-        mexicana:{id:'mexicana', emoji:'🌯', name:'Comida mexicana'},
-        rapida:{id:'rapida', emoji:'🍟', name:'Comida rápida'},
-        abarrotes:{id:'abarrotes', emoji:'🛒', name:'Abarrotes'},
-        farmacias:{id:'farmacias', emoji:'💊', name:'Farmacias'},
-        otros:{id:'otros', emoji:'🌸', name:'Otros'}
-      };
-      const cat = catMap[biz.category] || catMap.otros;
-
-      try {
-        await setDoc(doc(db, 'categories', cat.id), { name: cat.name, emoji: cat.emoji }, { merge: true });
-      } catch(e){}
-
-      const bizData = {
-        ownerId: uid,
-        ownerName: profile.name,
-        name: biz.name,
-        whatsapp: biz.whatsapp,
-        address: biz.address,
-        colony: 'Fraccionamiento Río Medio 3',
-        description: 'Negocio pendiente de completar información.',
-        schedule: '10:00 - 22:00',
-        deliveryFrom: 25,
-        categories: [cat.id],
-        city: 'Veracruz',
-        image: '',
-        coverImage: '',
-        logo: cat.emoji,
-        cover: cat.emoji,
-        rating: 0,
-        reviews: 0,
-        timeMin: 20,
-        timeMax: 40,
-        open: false,
-        featured: false,
-        popular: false,
-        new: true,
-        offer: false,
-        delivery: { home:true, pickup:true, freeFrom: 300 },
-        status: 'pending',
-        rejectionReason: null,
-        approvedAt: null,
-        approvedBy: null,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
-
-      await addDoc(collection(db, 'businesses'), bizData);
-      await setDoc(doc(db, 'users', uid), { businessCreated: true }, { merge: true });
-      console.log('✅ Negocio creado automáticamente:', biz.name);
-    } catch(e){
-      console.error('autoCreateBusiness error:', e);
-    }
-  }
-
-  async function logout(){
-    try { await signOut(auth); } catch(e){}
-    localStorage.removeItem(KEY_USER);
-    currentProfile = null;
-    window.location.href = 'bienvenida.html';
-  }
-
-  function openLogin(cb){
-    window.location.href = 'bienvenida.html';
-  }
-
-  const FAV = 'mercadito_favs_v2';
-  function favorites(){
-    try { return JSON.parse(localStorage.getItem(FAV) || '{"businesses":[],"products":[]}'); }
-    catch { return { businesses:[], products:[] }; }
-  }
-  function toggleFav(type, id){
-    const f = favorites();
-    const l = f[type];
-    const i = l.indexOf(id);
-    if(i >= 0) l.splice(i,1); else l.push(id);
-    localStorage.setItem(FAV, JSON.stringify(f));
-    App.toast(i >= 0 ? '💔 Eliminado' : '❤️ Agregado a favoritos');
-  }
-
-  return { init, logout, openLogin, profile, isAdmin, isVendor, favorites, toggleFav };
-})();
-
-/* ============================================================
-   NOTIFICACIONES
-   ============================================================ */
-const Notifications = (() => {
-  const KEY = 'mercadito_notifications';
-  function list(){ try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } }
-  function save(l){ localStorage.setItem(KEY, JSON.stringify(l)); updateBadge(); }
-  function add({title, body, icon='🔔'}){
-    const l = list();
-    l.unshift({ id:'n_'+Date.now()+Math.random(), title, body, icon, date:new Date().toISOString(), read:false });
-    save(l.slice(0,60));
-    App.toast(`${icon} ${title}`);
-    if('Notification' in window && Notification.permission === 'granted'){
-      try{ new Notification(title, { body }); }catch(e){}
-    }
-  }
-  function unreadCount(){ return list().filter(n=>!n.read).length; }
-  function markAllRead(){ save(list().map(n=>({...n, read:true}))); }
-  function clear(){ save([]); }
-  function updateBadge(){
-    const b = document.getElementById('notifBadge');
-    if(!b) return;
-    const n = unreadCount();
-    b.textContent = n > 99 ? '99+' : n;
-    b.classList.toggle('hidden', n === 0);
-  }
-  async function requestPermission(){
-    if(!('Notification' in window)){ App.toast('⚠️ Navegador sin soporte'); return false; }
-    if(location.protocol !== 'https:' && location.hostname !== 'localhost'){
-      App.toast('⚠️ Requiere HTTPS');
-      return false;
-    }
-    if(Notification.permission === 'granted') return true;
-    if(Notification.permission === 'denied'){ App.toast('🔕 Bloqueadas'); return false; }
-    const p = await Notification.requestPermission();
-    if(p === 'granted'){ App.toast('✅ Activadas'); add({ title:'Notificaciones activas', body:'Te avisaremos de tus pedidos.', icon:'✅' }); return true; }
-    return false;
-  }
-  function openCenter(){
-    const l = list();
-    App.openModal(`
-      <h3>🔔 Notificaciones</h3>
-      <p>${l.length ? l.length + ' en total' : 'Sin notificaciones'}</p>
-      <div style="max-height:55vh;overflow-y:auto">
-        ${l.length ? l.map(n=>`
-          <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
-            <div style="font-size:22px">${esc(n.icon)}</div>
-            <div style="flex:1;min-width:0">
-              <div style="font-weight:600;font-size:14px;${n.read?'':'color:var(--primary)'}">${esc(n.title)}</div>
-              <div style="font-size:12px;color:var(--text-soft);margin-top:2px">${esc(n.body)}</div>
-              <small style="color:#9ca3af;font-size:11px">${new Date(n.date).toLocaleString('es-MX')}</small>
-            </div>
-          </div>`).join('') : `<div class="empty" style="padding:30px"><span class="emoji">🔕</span><p>Todo tranquilo</p></div>`}
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" id="clearNotifs">Limpiar</button>
-        <button class="btn btn-primary" data-close-modal>Cerrar</button>
-      </div>
-    `);
-    markAllRead();
-    const c = document.getElementById('clearNotifs');
-    if(c) c.onclick = ()=>{ clear(); App.closeModal(); App.toast('🔕 Limpiadas'); };
-  }
-  return { list, add, unreadCount, markAllRead, clear, updateBadge, requestPermission, openCenter };
-})();
-
-/* ============================================================
-   CARRITO
-   ============================================================ */
-const Cart = (() => {
-  const KEY = 'mercadito_cart_v2';
-  function load(){
-    try {
-      const c = JSON.parse(localStorage.getItem(KEY) || '{"businessId":null,"items":[],"coupon":null}');
-      if(!('coupon' in c)) c.coupon = null;
-      return c;
-    } catch { return { businessId:null, items:[], coupon:null }; }
-  }
-  function save(c){ localStorage.setItem(KEY, JSON.stringify(c)); updateBadge(); }
-  function items(){ return load().items; }
-  function businessId(){ return load().businessId; }
-  function qty(id){ const it = items().find(x=>x.id===id); return it ? it.qty : 0; }
-  function coupon(){ return load().coupon; }
-
-  function add(product, addQty=1){
-    const biz = DB.get('businesses').find(x => x.id === product.businessId);
-    if(!biz) return App.toast('❌ Negocio no encontrado');
-    if(biz.status !== 'approved') return App.toast('⏸️ Negocio no disponible');
-    if(!biz.open) return App.toast('🔴 Cerrado');
-    if(biz.colony !== App.state.location.colony) return App.toast('📍 Fuera de tu zona');
-
-    const c = load();
-    if(c.businessId && c.businessId !== product.businessId){
-      App.openModal(`
-        <h3>🛒 Carrito con otro negocio</h3>
-        <p>¿Vaciar y comenzar un pedido nuevo?</p>
-        <div class="modal-actions">
-          <button class="btn btn-ghost" data-close-modal>Cancelar</button>
-          <button class="btn btn-primary" data-confirm-switch data-pid="${esc(product.id)}" data-qty="${addQty}">Continuar</button>
-        </div>
-      `);
-      return;
-    }
-    if(!c.businessId) c.businessId = product.businessId;
-    const existing = c.items.find(x=>x.id===product.id);
-    if(existing) existing.qty += addQty;
-    else c.items.push({ id:product.id, name:product.name, price:product.price, emoji:product.emoji, image:product.image || '', qty:addQty });
-    save(c);
-    App.toast(`✅ ${product.name} agregado`);
-  }
-  function inc(id){ const c=load(); const it=c.items.find(x=>x.id===id); if(it){ it.qty++; save(c);} }
-  function dec(id){
-    const c=load(); const it=c.items.find(x=>x.id===id); if(!it) return;
-    it.qty--; if(it.qty<=0) c.items = c.items.filter(x=>x.id!==id);
-    if(!c.items.length){ c.businessId=null; c.coupon=null; }
-    save(c);
-  }
-  function clear(){ save({ businessId:null, items:[], coupon:null }); }
-  function subtotal(){ return items().reduce((s,i)=>s + i.price * i.qty, 0); }
-  function deliveryCost(){
-    const bId = businessId(); if(!bId) return 0;
-    const b = DB.get('businesses').find(x=>x.id===bId); if(!b) return 0;
-    if(b.delivery?.freeFrom && subtotal() >= b.delivery.freeFrom) return 0;
-    return b.deliveryFrom || 0;
-  }
-  function discount(){
-    const c = load();
-    if(!c.coupon || !c.businessId) return 0;
-    const r = Coupons.validate(c.coupon.code, subtotal(), c.businessId);
-    return r.ok ? r.discount : 0;
-  }
-  function total(){ return Math.max(0, subtotal() + deliveryCost() - discount()); }
-  function applyCoupon(code){
-    const c = load();
-    if(!c.businessId || !c.items.length) return App.toast('Agrega productos primero');
-    const r = Coupons.validate(code, subtotal(), c.businessId);
-    if(!r.ok) return App.toast('❌ ' + r.msg);
-    c.coupon = { code:r.coupon.code, discount:r.discount };
-    save(c);
-    App.toast('🎟️ Cupón aplicado: -' + money(r.discount));
-    return true;
-  }
-  function removeCoupon(){ const c=load(); c.coupon=null; save(c); }
-  function updateBadge(){
-    const n = items().reduce((s,i)=>s + i.qty, 0);
-    const badge = document.getElementById('cartBadge');
-    if(!badge) return;
-    const prev = +badge.textContent || 0;
-    badge.textContent = n;
-    badge.classList.toggle('hidden', n === 0);
-    if(n > prev){ badge.classList.remove('bounce'); void badge.offsetWidth; badge.classList.add('bounce'); }
-  }
-  function floatingBar(){
-    return `
-      <div class="floating-bar">
-        <button class="btn btn-primary btn-block" data-nav="cart">
-          🛒 Ver carrito (${items().reduce((s,i)=>s+i.qty,0)}) · ${money(total())}
-        </button>
-      </div>`;
-  }
-  return { items, businessId, qty, coupon, add, inc, dec, clear, subtotal, deliveryCost, discount, total, updateBadge, floatingBar, applyCoupon, removeCoupon };
-})();
-
-/* ============================================================
-   CUPONES
-   ============================================================ */
-const Coupons = (() => {
-  function all(){ return DB.get('coupons'); }
-  function validate(code, subtotal, businessId){
-    const c = all().find(x => x.code.toUpperCase() === String(code).toUpperCase().trim());
-    if(!c) return { ok:false, msg:'Cupón no encontrado' };
-    if(!c.active) return { ok:false, msg:'Cupón inactivo' };
-    if(c.expiresAt && c.expiresAt < new Date().toISOString().slice(0,10)) return { ok:false, msg:'Expirado' };
-    if(c.minPurchase && subtotal < c.minPurchase) return { ok:false, msg:`Mínimo ${money(c.minPurchase)}` };
-    if(c.businessId && c.businessId !== businessId) return { ok:false, msg:'No válido aquí' };
-    if(c.maxUses && (c.uses || 0) >= c.maxUses) return { ok:false, msg:'Agotado' };
-    const raw = c.type === 'percent' ? Math.round(subtotal * c.value / 100) : c.value;
-    return { ok:true, coupon:c, discount: Math.min(raw, subtotal) };
-  }
-  async function incrementUses(code){
-    const c = all().find(x => x.code.toUpperCase() === String(code).toUpperCase());
-    if(c) await DB.update('coupons', c.id, { uses: (c.uses || 0) + 1 });
-  }
-  function openAdminList(){
-    const l = all();
-    App.openModal(`
-      <h3>🎟️ Cupones</h3>
-      <p>${l.length} cupones registrados</p>
-      <div style="max-height:60vh;overflow-y:auto;margin-bottom:12px">
-        ${l.length ? l.map(c=>`
-          <div style="display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);align-items:center">
-            <div style="width:56px;height:56px;border-radius:12px;background:#fff1ec;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🎟️</div>
-            <div style="flex:1;min-width:0">
-              <div style="font-weight:700;font-size:14px">${esc(c.code)}</div>
-              <div style="font-size:12px;color:var(--text-soft)">
-                ${c.type === 'percent' ? `${c.value}% desc.` : `${money(c.value)} desc.`}
-                ${c.minPurchase ? ` · mín ${money(c.minPurchase)}` : ''}
-              </div>
-              <div style="font-size:11px;color:var(--text-soft);margin-top:2px">
-                ${c.active ? '🟢 Activo' : '🔴 Inactivo'} · usos: ${c.uses || 0}${c.maxUses ? '/' + c.maxUses : ''}
-              </div>
-            </div>
-            <button class="btn btn-ghost btn-sm" data-edit-coupon="${esc(c.id)}">Editar</button>
-          </div>`).join('') : `<div class="empty" style="padding:30px"><span class="emoji">🎟️</span><p>Sin cupones</p></div>`}
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" data-close-modal>Cerrar</button>
-        <button class="btn btn-primary" id="newCouponBtn">+ Nuevo</button>
-      </div>
-    `);
-    const nb = document.getElementById('newCouponBtn');
-    if(nb) nb.onclick = ()=> openForm();
-  }
-  function openForm(id){
-    const c = id ? all().find(x => x.id === id) : null;
-    const today = new Date().toISOString().slice(0,10);
-    const businesses = DB.get('businesses').filter(b => b.status === 'approved');
-    App.openModal(`
-      <h3>${c ? '✏️ Editar cupón' : '➕ Nuevo cupón'}</h3>
-      <div class="form-group"><label>Código *</label><input id="cpCode" value="${esc(c?.code || '')}" placeholder="EJ: VERANO20" style="text-transform:uppercase" /></div>
-      <div class="form-group"><label>Tipo</label>
-        <select id="cpType">
-          <option value="percent" ${c?.type==='percent'?'selected':''}>Porcentaje (%)</option>
-          <option value="fixed" ${c?.type==='fixed'?'selected':''}>Monto fijo ($)</option>
-        </select>
-      </div>
-      <div class="form-group"><label>Valor *</label><input id="cpValue" type="number" value="${c?.value || 10}" /></div>
-      <div class="form-group"><label>Compra mínima</label><input id="cpMin" type="number" value="${c?.minPurchase || 0}" /></div>
-      <div class="form-group"><label>Negocio (opcional)</label>
-        <select id="cpBiz">
-          <option value="">🌐 Todos</option>
-          ${businesses.map(b=>`<option value="${esc(b.id)}" ${c?.businessId===b.id?'selected':''}>${esc(b.logo||'🏪')} ${esc(b.name)}</option>`).join('')}
-        </select>
-      </div>
-      <div class="form-group"><label>Caduca el</label><input id="cpExp" type="date" value="${c?.expiresAt || today}" /></div>
-      <div class="form-group"><label>Máx. usos (0=ilimitado)</label><input id="cpMax" type="number" value="${c?.maxUses || 0}" /></div>
-      <div class="form-group">
-        <label>Estado</label>
-        <button type="button" class="chip ${(!c || c.active)?'active':''}" id="cpActive">👁️ Activo</button>
-      </div>
-      <div class="modal-actions">
-        ${c ? `<button class="btn btn-ghost" id="delCoupon" style="color:#dc2626">Eliminar</button>` : ''}
-        <button class="btn btn-primary" id="saveCoupon">${c ? 'Guardar' : 'Crear'}</button>
-      </div>
-    `);
-    let active = c ? !!c.active : true;
-    document.getElementById('cpActive').onclick = e => { active = !active; e.target.classList.toggle('active', active); };
-    document.getElementById('saveCoupon').onclick = async ()=>{
-      const code = document.getElementById('cpCode').value.trim().toUpperCase();
-      if(!code) return App.toast('Ingresa un código');
-      const data = {
-        code,
-        type: document.getElementById('cpType').value,
-        value: +document.getElementById('cpValue').value || 0,
-        minPurchase: +document.getElementById('cpMin').value || 0,
-        businessId: document.getElementById('cpBiz').value || null,
-        expiresAt: document.getElementById('cpExp').value,
-        maxUses: +document.getElementById('cpMax').value || 0,
-        active
-      };
-      try {
-        if(c) await DB.update('coupons', c.id, data);
-        else {
-          if(all().some(x => x.code === code)) return App.toast('❌ Código ya existe');
-          await DB.add('coupons', { ...data, uses:0 });
-        }
-        await DB.loadAll();
-        App.closeModal();
-        App.toast(c ? '✅ Actualizado' : '🎟️ Creado');
-        App.render();
-      } catch(e){ App.toast('❌ ' + e.message); }
-    };
-    const del = document.getElementById('delCoupon');
-    if(del) del.onclick = async ()=>{
-      await DB.remove('coupons', c.id);
-      await DB.loadAll();
-      App.closeModal();
-      App.toast('🗑️ Eliminado');
-      App.render();
-    };
-  }
-  return { all, validate, incrementUses, openAdminList, openForm };
-})();
-
-/* ============================================================
-   PRODUCTOS
-   ============================================================ */
-const Products = (() => {
-  function hasOffer(bizId){
-    return DB.get('products').some(p => p.businessId === bizId && p.offer && p.active);
-  }
-  function forBusiness(bizId){ return DB.get('products').filter(p => p.businessId === bizId); }
-
-  function openForm(id){
-    const v = Vendors.current();
-    if(!v) return App.toast('Primero registra tu negocio');
-    const p = id ? DB.get('products').find(x=>x.id===id) : null;
-    App.openModal(`
-      <h3>${p ? '✏️ Editar producto' : '➕ Nuevo producto'}</h3>
-      ${ImageUtils.uploadBox('pImgBox', '📷 Imagen del producto', p?.image || '')}
-      <div class="form-group"><label>Nombre *</label><input id="pName" value="${esc(p?.name || '')}" /></div>
-      <div class="form-group"><label>Descripción *</label><textarea id="pDesc" rows="2">${esc(p?.desc || '')}</textarea></div>
-      <div class="form-group"><label>Precio *</label><input id="pPrice" type="number" value="${p?.price || ''}" /></div>
-      <div class="form-group"><label>Precio anterior (opcional)</label><input id="pOld" type="number" value="${p?.oldPrice || ''}" /></div>
-      <div class="form-group"><label>Categoría *</label><input id="pCat" value="${esc(p?.category || 'General')}" /></div>
-      <div class="form-group"><label>Emoji (si no subes imagen)</label><input id="pEmoji" value="${esc(p?.emoji || '🍽️')}" /></div>
-      <div class="form-group"><label>Existencia</label><input id="pStock" type="number" value="${p?.stock ?? 10}" /></div>
-      <div class="form-group"><label>¿En oferta?</label><button type="button" class="chip ${p?.offer?'active':''}" id="pOffer">🔥 Sí</button></div>
-      <div class="modal-actions">
-        ${p ? `<button class="btn btn-ghost" id="delProd" style="color:#dc2626">Eliminar</button>` : ''}
-        <button class="btn btn-primary" id="saveProd">${p ? 'Guardar' : 'Crear'}</button>
-      </div>
-    `);
-    let offer = p?.offer || false;
-    document.getElementById('pOffer').onclick = e => { offer = !offer; e.target.classList.toggle('active', offer); };
-    ImageUtils.setup('pImgBox');
-
-    document.getElementById('saveProd').onclick = async ()=>{
-      const name = document.getElementById('pName').value.trim();
-      const desc = document.getElementById('pDesc').value.trim();
-      const price = +document.getElementById('pPrice').value;
-      if(name.length < 3) return App.toast('❌ Nombre muy corto');
-      if(desc.length < 5) return App.toast('❌ Descripción muy corta');
-      if(!price || price <= 0) return App.toast('❌ Precio inválido');
-
-      App.showLoading();
-      try {
-        let imageUrl = p?.image || '';
-        if(ImageUtils.hasNewImage('pImgBox')){
-          const blob = ImageUtils.getPendingBlob('pImgBox');
-          imageUrl = await ImageUtils.uploadToStorage(blob, `products/${v.id}/${Date.now()}.webp`);
-        }
-        const data = {
-          businessId: v.id,
-          name, desc, price,
-          oldPrice: +document.getElementById('pOld').value || null,
-          category: document.getElementById('pCat').value.trim() || 'General',
-          emoji: document.getElementById('pEmoji').value.trim() || '🍽️',
-          stock: +document.getElementById('pStock').value || 0,
-          image: imageUrl,
-          offer, active:true,
-          sold: p?.sold || 0
-        };
-        if(p) await DB.update('products', p.id, data);
-        else await DB.add('products', data);
-        await DB.loadAll();
-        App.closeModal();
-        App.toast(p ? '✅ Actualizado' : '🎉 Creado');
-        App.render();
-      } catch(e){
-        App.toast('❌ ' + e.message);
-      } finally { App.hideLoading(); }
-    };
-    const del = document.getElementById('delProd');
-    if(del) del.onclick = async ()=>{
-      await DB.remove('products', p.id);
-      await DB.loadAll();
-      App.closeModal();
-      App.toast('🗑️ Eliminado');
-      App.render();
-    };
-  }
-  return { hasOffer, forBusiness, openForm };
-})();
-
-/* ============================================================
-   VALIDACIÓN DE NEGOCIOS
-   ============================================================ */
-const BizValidation = (() => {
-  function validate(data){
-    const errors = {};
-    if(!data.owner || data.owner.trim().length < 3) errors.owner = 'Mínimo 3 caracteres';
-    if(!data.name || data.name.trim().length < 3) errors.name = 'Mínimo 3 caracteres';
-    if(!data.whatsapp || !/^\d{10,15}$/.test(String(data.whatsapp).replace(/\D/g,''))) errors.whatsapp = 'Debe tener 10-15 dígitos';
-    if(!data.address || data.address.trim().length < 5) errors.address = 'Dirección muy corta';
-    if(!data.colony || !ZONE_NAMES.includes(data.colony)) errors.colony = 'Zona no válida';
-    if(!data.description || data.description.trim().length < 15) errors.description = 'Mínimo 15 caracteres';
-    if(!data.categories || !data.categories.length) errors.categories = 'Selecciona al menos una';
-    if(!data.schedule || !/^\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}$/.test(data.schedule)) errors.schedule = 'Formato HH:MM - HH:MM';
-    const del = Number(data.deliveryFrom);
-    if(isNaN(del) || del < 0 || del > 500) errors.deliveryFrom = 'Entre $0 y $500';
-    return { valid: Object.keys(errors).length === 0, errors };
-  }
-  function renderErrors(errors, prefix){
-    Object.keys(errors).forEach(k=>{
-      const fg = document.getElementById(prefix + k);
-      if(fg){
-        fg.classList.add('error');
-        const errEl = fg.querySelector('.err');
-        if(errEl) errEl.textContent = errors[k];
-      }
-    });
-  }
-  function clearErrors(prefix){
-    document.querySelectorAll(`[id^="${prefix}"]`).forEach(fg=>{
-      fg.classList.remove('error');
-      const e = fg.querySelector('.err');
-      if(e) e.textContent = '';
-    });
-  }
-  return { validate, renderErrors, clearErrors };
-})();
-
-/* ============================================================
-   VENDORS
-   ============================================================ */
-const Vendors = (() => {
-  function current(){
-    const p = Auth.profile();
-    if(!p) return null;
-    return DB.get('businesses').find(b => b.ownerId === p.uid) || null;
-  }
-
-  async function toggleOpen(){
-    const v = current();
-    if(!v) return;
-    if(v.status !== 'approved') return App.toast('⏸️ Negocio no aprobado');
-    await DB.update('businesses', v.id, { open: !v.open });
-    await DB.loadAll();
-    App.toast(!v.open ? '🟢 Abierto' : '🔴 Cerrado');
-    App.render();
-  }
-
-  function openRegister(){
-    const p = Auth.profile();
-    if(!p) return Auth.openLogin(()=> openRegister());
-    const cats = DB.get('categories');
-    if(!cats.length) return App.toast('⚠️ No hay categorías. Contacta al admin.');
-
-    App.openModal(`
-      <h3>🏪 Registro de vendedor</h3>
-      <p>Completa los requisitos. Un administrador revisará tu solicitud.</p>
-
-      ${ImageUtils.uploadBox('vLogoBox', '🖼️ Logo del negocio *')}
-      ${ImageUtils.uploadBox('vCoverBox', '🎨 Portada (opcional)')}
-
-      <div class="form-group" id="vr-owner"><label>Nombre del propietario *</label><input id="vOwner" value="${esc(p.name||'')}" /><div class="err"></div></div>
-      <div class="form-group" id="vr-name"><label>Nombre del negocio *</label><input id="vName" /><div class="err"></div></div>
-      <div class="form-group" id="vr-whatsapp"><label>WhatsApp (con LADA, 10-15 dígitos) *</label><input id="vWa" type="tel" value="${esc(p.phone||'')}" placeholder="5215551234567" /><div class="err"></div></div>
-      <div class="form-group" id="vr-address"><label>Dirección *</label><input id="vAddr" placeholder="Calle, número, colonia" /><div class="err"></div></div>
-      <div class="form-group" id="vr-colony">
-        <label>Fraccionamiento *</label>
-        <select id="vColony">${ZONE_NAMES.map(z => `<option>${esc(z)}</option>`).join('')}</select>
-        <div class="err"></div>
-      </div>
-      <div class="form-group" id="vr-categories">
-        <label>Categoría principal *</label>
-        <select id="vCat">${cats.map(c=>`<option value="${esc(c.id)}">${esc(c.emoji)} ${esc(c.name)}</option>`).join('')}</select>
-        <label style="margin-top:8px">Categorías adicionales</label>
-        <div class="chip-select" id="extraCats">
-          ${cats.map(c=>`<button type="button" class="chip" data-xcat="${esc(c.id)}">${esc(c.emoji)} ${esc(c.name)}</button>`).join('')}
-        </div>
-        <div class="err"></div>
-      </div>
-      <div class="form-group" id="vr-description"><label>Descripción * (mín. 15 caracteres)</label><textarea id="vDesc" rows="3" placeholder="Ej: Las mejores hamburguesas al carbón de la zona..."></textarea><div class="err"></div></div>
-      <div class="form-group" id="vr-schedule"><label>Horario de atención * (HH:MM - HH:MM)</label><input id="vSchedule" value="10:00 - 22:00" placeholder="10:00 - 22:00" /><div class="err"></div></div>
-      <div class="form-group" id="vr-deliveryFrom"><label>Costo de envío base *</label><input id="vDel" type="number" value="25" /><div class="err"></div></div>
-      <div class="form-group"><label>Envío gratis desde ($, opcional)</label><input id="vFree" type="number" value="300" /></div>
-      <div class="form-group"><label>Emoji (si no subes logo)</label><input id="vLogo" value="🍔" /></div>
-
-      <div style="background:#fff8e1;border-left:4px solid #f59e0b;padding:12px;border-radius:10px;margin-bottom:12px;font-size:12px;color:#78350f">
-        ⚠️ <strong>Requisitos obligatorios:</strong> logo, nombre, propietario, WhatsApp válido, dirección, zona, categorías, descripción, horario y costo de envío. Al enviar, tu negocio quedará <strong>pendiente de aprobación</strong>.
-      </div>
-
-      <div class="modal-actions">
-        <button class="btn btn-ghost" data-close-modal>Cancelar</button>
-        <button class="btn btn-primary" id="saveVendor">📤 Enviar solicitud</button>
-      </div>
-    `);
-
-    ImageUtils.setup('vLogoBox');
-    ImageUtils.setup('vCoverBox');
-
-    let extras = [];
-    document.querySelectorAll('[data-xcat]').forEach(b => b.onclick = ()=>{
-      const id = b.dataset.xcat;
-      b.classList.toggle('active');
-      extras = b.classList.contains('active') ? [...extras, id] : extras.filter(x=>x!==id);
-    });
-
-    document.getElementById('saveVendor').onclick = async ()=>{
-      const p = Auth.profile();
-      if(!p) return App.toast('Inicia sesión');
-
-      const data = {
-        owner: document.getElementById('vOwner').value.trim(),
-        name: document.getElementById('vName').value.trim(),
-        whatsapp: document.getElementById('vWa').value.replace(/\D/g,''),
-        address: document.getElementById('vAddr').value.trim(),
-        colony: document.getElementById('vColony').value,
-        description: document.getElementById('vDesc').value.trim(),
-        schedule: document.getElementById('vSchedule').value.trim(),
-        deliveryFrom: +document.getElementById('vDel').value,
-        categories: [document.getElementById('vCat').value, ...extras]
-      };
-
-      BizValidation.clearErrors('vr-');
-      const { valid, errors } = BizValidation.validate(data);
-      if(!valid){ BizValidation.renderErrors(errors, 'vr-'); return App.toast('❌ Revisa los campos'); }
-      if(!ImageUtils.hasNewImage('vLogoBox')) return App.toast('❌ El logo es obligatorio');
-
-      App.showLoading();
-      try {
-        const logoBlob = ImageUtils.getPendingBlob('vLogoBox');
-        const logoUrl = await ImageUtils.uploadToStorage(logoBlob, `businesses/${p.uid}/logo_${Date.now()}.webp`);
-        let coverUrl = '';
-        if(ImageUtils.hasNewImage('vCoverBox')){
-          const coverBlob = ImageUtils.getPendingBlob('vCoverBox');
-          coverUrl = await ImageUtils.uploadToStorage(coverBlob, `businesses/${p.uid}/cover_${Date.now()}.webp`);
-        }
-
-        const biz = {
-          ...data,
-          ownerId: p.uid,
-          ownerName: p.name,
-          city: 'Veracruz',
-          image: logoUrl,
-          coverImage: coverUrl,
-          logo: document.getElementById('vLogo').value.trim() || '🏪',
-          cover: document.getElementById('vLogo').value.trim() || '🏪',
-          rating: 0,
-          reviews: 0,
-          timeMin: 20, timeMax: 40,
-          open: false,
-          featured: false, popular: false, new: true, offer: false,
-          delivery: {
-            home: true, pickup: true,
-            freeFrom: +document.getElementById('vFree').value || 0
-          },
-          status: 'pending',
-          rejectionReason: null,
-          approvedAt: null,
-          approvedBy: null
-        };
-
-        await DB.add('businesses', biz);
-        await DB.update('users', p.uid, { role: 'vendor' });
-        Auth.profile().role = 'vendor';
-        await DB.loadAll();
-        App.closeModal();
-        App.toast('📤 Solicitud enviada. Espera aprobación.');
-        Notifications.add({ title:'Solicitud enviada', body:`${biz.name} está en revisión`, icon:'📤' });
-        App.navigate('vendor');
-      } catch(e){
-        App.toast('❌ ' + e.message);
-      } finally { App.hideLoading(); }
-    };
-  }
-
-  async function changeZone(newZone){
-    const v = current();
-    if(!v) return;
-    if(!ZONE_NAMES.includes(newZone)) return App.toast('Zona no válida');
-    await DB.update('businesses', v.id, { colony: newZone });
-    await DB.loadAll();
-    App.toast('📍 Zona actualizada');
-    App.render();
-  }
-
-  return { current, toggleOpen, openRegister, changeZone };
-})();
-
-/* ============================================================
-   REVIEWS
-   ============================================================ */
-const Reviews = (() => {
-  function forBusiness(bizId){
-    return DB.get('reviews')
-      .filter(r => r.businessId === bizId)
-      .sort((a,b) => (b.date || '').localeCompare(a.date || ''));
-  }
-  async function updateBizRating(bizId){
-    const l = forBusiness(bizId);
-    if(!l.length) return;
-    const avg = +(l.reduce((s,r)=>s+r.rating,0)/l.length).toFixed(1);
-    await DB.update('businesses', bizId, { rating: avg, reviews: l.length });
-  }
-  function openForm(bizId){
-    const u = Auth.profile();
-    if(!u) return Auth.openLogin(()=> openForm(bizId));
-    const b = DB.get('businesses').find(x=>x.id===bizId);
-    let rating = 5;
-    App.openModal(`
-      <h3>⭐ Escribir reseña</h3>
-      <p>${esc(b?.logo||'')} ${esc(b?.name||'')}</p>
-      <div class="form-group">
-        <label>Calificación</label>
-        <div class="stars" id="starPicker">
-          ${[1,2,3,4,5].map(n=>`<button type="button" class="star-btn ${n<=rating?'active':''}" data-star="${n}">${n<=rating?'★':'☆'}</button>`).join('')}
-        </div>
-      </div>
-      <div class="form-group"><label>Comentario *</label><textarea id="rvText" rows="3" placeholder="Cuéntanos tu experiencia..."></textarea></div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" data-close-modal>Cancelar</button>
-        <button class="btn btn-primary" id="submitReview">Publicar</button>
-      </div>
-    `);
-    const picker = document.getElementById('starPicker');
-    function paint(){
-      picker.querySelectorAll('[data-star]').forEach(btn=>{
-        const n = +btn.dataset.star;
-        btn.textContent = n <= rating ? '★' : '☆';
-        btn.classList.toggle('active', n <= rating);
-      });
-    }
-    picker.querySelectorAll('[data-star]').forEach(btn=>{ btn.onclick = ()=>{ rating = +btn.dataset.star; paint(); }; });
-    document.getElementById('submitReview').onclick = async ()=>{
-      const text = document.getElementById('rvText').value.trim();
-      if(text.length < 5) return App.toast('Escribe al menos 5 caracteres');
-      try {
-        await DB.add('reviews', { businessId:bizId, user:u.name, userId:u.uid, rating, text, date:new Date().toISOString().slice(0,10) });
-        await updateBizRating(bizId);
-        await DB.loadAll();
-        App.closeModal();
-        App.toast('🎉 ¡Gracias!');
-        Notifications.add({ title:'Reseña publicada', body:`Gracias por calificar`, icon:'⭐' });
-        App.render();
-      } catch(e){ App.toast('❌ ' + e.message); }
-    };
-  }
-  function renderCard(r){
-    const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
-    return `
-      <div class="review-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <strong style="font-size:14px">${esc(r.user)}</strong>
-          <span class="review-stars">${stars}</span>
-        </div>
-        <p style="margin:0;font-size:13px;color:var(--text-soft);line-height:1.4">${esc(r.text)}</p>
-        <small style="color:#9ca3af;font-size:11px">${esc(r.date)}</small>
-      </div>`;
-  }
-  return { forBusiness, updateBizRating, openForm, renderCard };
-})();
-
-/* ============================================================
-   ORDERS
-   ============================================================ */
-const Orders = (() => {
-  const FLOW = ['pending', 'preparing', 'onway', 'delivered'];
-
-  function list(){ return DB.get('orders'); }
-  function listForUser(){
-    const u = Auth.profile();
-    if(!u) return [];
-    return list().filter(o => o.userId === u.uid);
-  }
-  function forBusiness(bizId){ return list().filter(o => o.businessId === bizId); }
-  function getByNumber(number){ return list().find(o => o.number === number); }
-  function statusLabel(s){
-    return {
-      pending:'🟡 Recibido', confirmed:'🔵 Confirmado',
-      preparing:'🟠 Preparando', onway:'🚚 En camino',
-      delivered:'🟢 Entregado', cancelled:'❌ Cancelado'
-    }[s] || s;
-  }
-  function nextNumber(){ return 1000 + list().length + Math.floor(Math.random() * 900); }
-
-  async function create(order){
-    await DB.add('orders', order);
-  }
-  async function updateStatus(id, status){
-    const o = list().find(x => x.id === id);
-    if(!o) return null;
-    await DB.update('orders', id, { status });
-    return { ...o, status };
-  }
-
-  return { list, listForUser, forBusiness, getByNumber, statusLabel, nextNumber, create, updateStatus, FLOW };
-})();
-
-/* ============================================================
-   WHATSAPP CHECKOUT
-   ============================================================ */
-const WhatsApp = (() => {
-  function checkout(){
-    const items = Cart.items();
-    if(!items.length) return App.toast('El carrito está vacío');
-    const b = DB.get('businesses').find(x=>x.id===Cart.businessId());
-    if(!b) return App.toast('Negocio no encontrado');
-    if(b.status !== 'approved') return App.toast('⏸️ Negocio no disponible');
-    if(!b.open) return App.toast('🔴 El negocio está cerrado');
-
-    const u = Auth.profile();
-    if(!u) return Auth.openLogin(()=> checkout());
-
-    const sub = Cart.subtotal();
-    const del = Cart.deliveryCost();
-    const disc = Cart.discount();
-    const tot = Cart.total();
-    const coup = Cart.coupon();
-
-    App.openModal(`
-      <h3>📋 Confirmar pedido</h3>
-      <p>Pedido a <strong>${esc(b.name)}</strong></p>
-      <div class="form-group"><label>📍 Dirección *</label><input id="oAddr" placeholder="Calle, número" /><div class="err" style="color:#dc2626;font-size:11px"></div></div>
-      <div class="form-group"><label>🏠 Fraccionamiento</label><input id="oColony" value="${esc(App.state.location.colony)}" readonly style="background:#f1f3f6" /></div>
-      <div class="form-group"><label>📝 Referencia</label><input id="oRef" placeholder="Casa azul, portón negro..." /></div>
-      <div class="form-group"><label>💳 Pago</label>
-        <select id="oPay"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option></select>
-      </div>
-      <div class="summary" style="margin:0 0 12px">
-        <div class="summary-row"><span>Subtotal</span><span>${money(sub)}</span></div>
-        <div class="summary-row"><span>Envío</span><span>${del ? money(del) : 'Gratis'}</span></div>
-        ${disc ? `<div class="summary-row" style="color:#16a34a"><span>🎟️ ${esc(coup.code)}</span><span>-${money(disc)}</span></div>` : ''}
-        <div class="summary-row total"><span>Total</span><span>${money(tot)}</span></div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" data-close-modal>Cancelar</button>
-        <button class="btn btn-primary" id="sendWa">📲 Enviar por WhatsApp</button>
-      </div>
-    `);
-    document.getElementById('sendWa').onclick = async ()=>{
-      const addr = document.getElementById('oAddr').value.trim();
-      const colony = document.getElementById('oColony').value.trim();
-      const ref = document.getElementById('oRef').value.trim();
-      const pay = document.getElementById('oPay').value;
-      if(addr.length < 5) return App.toast('❌ Dirección muy corta');
-
-      const num = Orders.nextNumber();
-      const lines = items.map(i=>`${i.qty}x ${i.name} — ${money(i.price * i.qty)}`).join('\n');
-      const couponLine = disc ? `\n🎟️ Cupón ${coup.code}: -${money(disc)}` : '';
-      const msg = `Hola, ${b.name}. 👋\n\nQuiero el siguiente pedido:\n\n🛒 Pedido #${num}\n\n${lines}\n\nSubtotal: ${money(sub)}\nEnvío: ${del ? money(del) : 'Gratis'}${couponLine}\n\nTOTAL: ${money(tot)}\n\n📍 ${addr}\n🏠 ${colony}\n📝 ${ref || 'Sin referencia'}\n💳 ${pay}\n👤 ${u.name}\n\nGracias.`;
-
-      const url = `https://wa.me/${b.whatsapp}?text=${encodeURIComponent(msg)}`;
-      const win = window.open(url, '_blank');
-      if(!win) return App.toast('⚠️ Permite ventanas emergentes');
-
-      App.showLoading();
-      try {
-        await Orders.create({
-          number: num,
-          businessId: b.id,
-          businessName: b.name,
-          colony: b.colony,
-          items: items.map(i => ({...i})),
-          subtotal: sub, delivery: del, discount: disc, total: tot,
-          coupon: coup ? coup.code : null,
-          status: 'pending',
-          userId: u.uid,
-          customer: { name: u.name, phone: u.phone, address: addr, colony, reference: ref, pay },
-          date: new Date().toLocaleDateString('es-MX')
-        });
-        if(coup) await Coupons.incrementUses(coup.code);
-        await DB.loadAll();
-        Notifications.add({ title:'Pedido enviado 🎉', body:`#${num} · ${money(tot)}`, icon:'📦' });
-        Cart.clear();
-        App.closeModal();
-        App.toast('✅ Pedido enviado');
-        setTimeout(()=>App.navigate('orders'), 400);
-      } catch(e){
-        App.toast('❌ ' + e.message);
-      } finally { App.hideLoading(); }
-    };
-  }
-  return { checkout };
-})();
-
-/* ============================================================
-   PROMOS
-   ============================================================ */
-const Promos = (() => {
-  function activeForZone(){
-    const today = new Date().toISOString().slice(0,10);
-    return DB.get('promos')
-      .filter(p => p.active && p.paid && (!p.startDate || p.startDate <= today) && (!p.endDate || p.endDate >= today))
-      .sort((a,b) => (a.priority||99) - (b.priority||99));
-  }
-  function all(){ return DB.get('promos'); }
-  function openForm(id){
-    const promo = id ? all().find(p => p.id === id) : null;
-    const businesses = DB.get('businesses').filter(b => b.status === 'approved');
-    const today = new Date().toISOString().slice(0,10);
-    App.openModal(`
-      <h3>${promo ? '✏️ Editar promo' : '➕ Nueva promo'}</h3>
-      <div class="form-group"><label>Negocio</label>
-        <select id="prBiz">${businesses.map(b => `<option value="${esc(b.id)}" ${promo?.businessId===b.id?'selected':''}>${esc(b.logo||'🏪')} ${esc(b.name)}</option>`).join('')}</select>
-      </div>
-      <div class="form-group"><label>Título *</label><input id="prTitle" value="${esc(promo?.title || '')}" /></div>
-      <div class="form-group"><label>Subtítulo</label><input id="prSubtitle" value="${esc(promo?.subtitle || '')}" /></div>
-      <div class="form-group"><label>Emoji</label><input id="prEmoji" value="${esc(promo?.emoji || '🔥')}" maxlength="2" /></div>
-      <div class="form-group"><label>Color de fondo</label><input id="prBg" value="${esc(promo?.bg || 'linear-gradient(135deg,#ff4d2e,#ff7a55)')}" /></div>
-      <div class="form-group"><label>Costo ($)</label><input id="prPrice" type="number" value="${promo?.price || 150}" /></div>
-      <div class="form-group"><label>Inicio</label><input id="prStart" type="date" value="${promo?.startDate || today}" /></div>
-      <div class="form-group"><label>Fin</label><input id="prEnd" type="date" value="${promo?.endDate || today}" /></div>
-      <div class="form-group"><label>Estado del pago</label><button type="button" class="chip ${promo?.paid?'active':''}" id="prPaid">💰 Pagado</button></div>
-      <div class="form-group"><label>Visible</label><button type="button" class="chip ${promo?.active?'active':''}" id="prActive">👁️ Activo</button></div>
-      <div class="modal-actions">
-        ${promo ? `<button class="btn btn-ghost" id="delPromo" style="color:#dc2626">Eliminar</button>` : ''}
-        <button class="btn btn-primary" id="savePromo">${promo ? 'Guardar' : 'Crear'}</button>
-      </div>
-    `);
-    let paid = promo?.paid || false;
-    let active = promo?.active ?? true;
-    document.getElementById('prPaid').onclick = e => { paid = !paid; e.target.classList.toggle('active', paid); };
-    document.getElementById('prActive').onclick = e => { active = !active; e.target.classList.toggle('active', active); };
-    document.getElementById('savePromo').onclick = async ()=>{
-      const data = {
-        businessId: document.getElementById('prBiz').value,
-        title: document.getElementById('prTitle').value.trim(),
-        subtitle: document.getElementById('prSubtitle').value.trim(),
-        emoji: document.getElementById('prEmoji').value.trim() || '🔥',
-        bg: document.getElementById('prBg').value.trim() || 'linear-gradient(135deg,#ff4d2e,#ff7a55)',
-        price: +document.getElementById('prPrice').value || 0,
-        startDate: document.getElementById('prStart').value,
-        endDate: document.getElementById('prEnd').value,
-        paid, active,
-        priority: promo?.priority ?? (all().length + 1)
-      };
-      if(!data.title) return App.toast('Título obligatorio');
-      try {
-        if(promo) await DB.update('promos', promo.id, data);
-        else { await DB.add('promos', data); Notifications.add({ title:'Nueva promo', body:data.title, icon:'🎠' }); }
-        await DB.loadAll();
-        App.closeModal();
-        App.toast(promo ? '✅ Actualizado' : '🎉 Creado');
-        App.render();
-      } catch(e){ App.toast('❌ ' + e.message); }
-    };
-    const del = document.getElementById('delPromo');
-    if(del) del.onclick = async ()=>{
-      await DB.remove('promos', promo.id);
-      await DB.loadAll();
-      App.closeModal();
-      App.toast('🗑️ Eliminado');
-      App.render();
-    };
-  }
-  function openList(){
-    const l = all();
-    const businesses = DB.get('businesses');
-    App.openModal(`
-      <h3>🎠 Carrusel</h3>
-      <p>${l.length} promociones</p>
-      <div style="max-height:60vh;overflow-y:auto;margin-bottom:12px">
-        ${l.length ? l.map(p => {
-          const b = businesses.find(x => x.id === p.businessId);
-          return `
-            <div style="display:flex;gap:10px;padding:12px 0;border-bottom:1px solid #eceef1;align-items:center">
-              <div style="width:52px;height:52px;border-radius:12px;background:${esc(p.bg)};display:flex;align-items:center;justify-content:center;font-size:24px">${esc(p.emoji)}</div>
-              <div style="flex:1;min-width:0">
-                <div style="font-weight:700;font-size:14px">${esc(p.title)}</div>
-                <div style="font-size:12px;color:#6b7280">${esc(b?.name || '—')}</div>
-                <div style="font-size:11px;margin-top:2px">${p.paid ? '💰' : '⏳'} · ${p.active ? '👁️' : '🚫'} · ${money(p.price)}</div>
-              </div>
-              <button class="btn btn-ghost btn-sm" data-edit-promo="${esc(p.id)}">Editar</button>
-            </div>`;
-        }).join('') : `<div class="empty" style="padding:30px"><span class="emoji">🎠</span><p>Sin promos</p></div>`}
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" data-close-modal>Cerrar</button>
-        <button class="btn btn-primary" id="newPromoBtn">+ Nueva</button>
-      </div>
-    `);
-    const n = document.getElementById('newPromoBtn');
-    if(n) n.onclick = ()=> openForm();
-  }
-  return { activeForZone, all, openForm, openList };
-})();
-
-/* ============================================================
-   ADMIN
-   ============================================================ */
-const Admin = (() => {
-  function stats(){
-    const promos = DB.get('promos') || [];
-    const bizzes = DB.get('businesses') || [];
-    return {
-      users: (DB.get('users')||[]).length,
-      businesses: bizzes.length,
-      pendingBusinesses: bizzes.filter(b => b.status === 'pending').length,
-      approvedBusinesses: bizzes.filter(b => b.status === 'approved').length,
-      products: DB.get('products').length,
-      orders: DB.get('orders').length,
-      categories: DB.get('categories').length,
-      reviews: DB.get('reviews').length,
-      promos: promos.length,
-      promosRevenue: promos.filter(p => p.paid).reduce((s,p)=>s+(p.price||0),0),
-      coupons: (DB.get('coupons')||[]).length
-    };
-  }
-
-  function openPendingBusinesses(){
-    const pending = DB.get('businesses').filter(b => b.status === 'pending');
-    if(!pending.length){
-      return App.openModal(`
-        <h3>📭 Sin solicitudes</h3>
-        <p>No hay negocios pendientes de aprobación.</p>
-        <div class="modal-actions"><button class="btn btn-primary" data-close-modal>Cerrar</button></div>
-      `);
-    }
-    App.openModal(`
-      <h3>⏳ Negocios pendientes (${pending.length})</h3>
-      <p>Revisa los requisitos antes de aprobar.</p>
-      <div style="max-height:65vh;overflow-y:auto">
-        ${pending.map(b => bizReviewCard(b)).join('')}
-      </div>
-      <div class="modal-actions"><button class="btn btn-primary" data-close-modal>Cerrar</button></div>
-    `);
-  }
-
-  function bizReviewCard(b){
-    return `
-      <div style="background:#fafbfc;border-radius:12px;padding:12px;margin-bottom:10px;border-left:4px solid #f59e0b">
-        <div style="display:flex;gap:10px;align-items:flex-start">
-          <div style="width:56px;height:56px;border-radius:10px;background:#fff1ec;overflow:hidden;flex-shrink:0;${b.image?`background-image:url(${esc(b.image)});background-size:cover;background-position:center;`:''}">
-            ${b.image ? '' : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:26px">${esc(b.logo||'🏪')}</div>`}
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:700;font-size:14px">${esc(b.name)}</div>
-            <div style="font-size:12px;color:#6b7280;margin-top:2px">
-              👤 ${esc(b.owner)} · 📱 ${esc(b.whatsapp)}<br>
-              📍 ${esc(b.address)}, ${esc(b.colony)}<br>
-              🕐 ${esc(b.schedule)} · 🚚 ${money(b.deliveryFrom)}
-            </div>
-            <div style="font-size:12px;color:#374151;margin-top:6px;font-style:italic">"${esc(b.description)}"</div>
-            <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
-              ${(b.categories||[]).map(c => {
-                const cat = DB.get('categories').find(x => x.id === c);
-                return `<span class="tag primary">${esc(cat?.emoji||'')} ${esc(cat?.name||c)}</span>`;
-              }).join('')}
-            </div>
-          </div>
-        </div>
-        <div style="display:flex;gap:6px;margin-top:10px">
-          <button class="btn btn-success btn-sm" style="flex:1" data-approve-biz="${esc(b.id)}">✅ Aprobar</button>
-          <button class="btn btn-danger btn-sm" style="flex:1" data-reject-biz="${esc(b.id)}">❌ Rechazar</button>
-        </div>
-      </div>`;
-  }
-
-  async function approveBiz(id){
-    const b = DB.get('businesses').find(x => x.id === id);
-    if(!b) return;
-    await DB.update('businesses', id, {
-      status: 'approved',
-      approvedAt: new Date().toISOString(),
-      approvedBy: Auth.profile()?.uid || 'admin',
-      open: true,
-      rejectionReason: null
-    });
-    await DB.loadAll();
-    Notifications.add({ title:'✅ Negocio aprobado', body:`${b.name} ya está visible`, icon:'🎉' });
-    App.toast('✅ Aprobado');
-    App.render();
-    openPendingBusinesses();
-  }
-
-  function rejectBiz(id){
-    const b = DB.get('businesses').find(x => x.id === id);
-    if(!b) return;
-    App.openModal(`
-      <h3>❌ Rechazar negocio</h3>
-      <p>${esc(b.name)} — ${esc(b.owner)}</p>
-      <div class="form-group">
-        <label>Motivo del rechazo *</label>
-        <textarea id="rejectReason" rows="3" placeholder="Ej: Falta información de contacto, logo no válido..."></textarea>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" data-close-modal>Cancelar</button>
-        <button class="btn btn-danger" id="confirmReject">Rechazar</button>
-      </div>
-    `);
-    document.getElementById('confirmReject').onclick = async ()=>{
-      const reason = document.getElementById('rejectReason').value.trim();
-      if(reason.length < 5) return App.toast('Motivo muy corto');
-      await DB.update('businesses', id, {
-        status: 'rejected',
-        rejectionReason: reason,
-        open: false
-      });
-      await DB.loadAll();
-      Notifications.add({ title:'❌ Negocio rechazado', body:b.name, icon:'❌' });
-      App.toast('❌ Rechazado');
-      App.render();
-      openPendingBusinesses();
-    };
-  }
-
-  async function suspendBiz(id){
-    const b = DB.get('businesses').find(x => x.id === id);
-    if(!b) return;
-    await DB.update('businesses', id, { status: 'suspended', open: false });
-    await DB.loadAll();
-    App.toast('⏸️ Suspendido');
-    App.render();
-  }
-  async function reactivateBiz(id){
-    const b = DB.get('businesses').find(x => x.id === id);
-    if(!b) return;
-    await DB.update('businesses', id, { status: 'approved', open: true });
-    await DB.loadAll();
-    App.toast('🟢 Reactivado');
-    App.render();
-  }
-
-  function openAllBusinesses(){
-    const list = DB.get('businesses');
-    App.openModal(`
-      <h3>🏪 Todos los negocios (${list.length})</h3>
-      <div style="max-height:65vh;overflow-y:auto">
-        ${list.map(b => {
-          const st = BIZ_STATUS[b.status || 'pending'];
-          return `
-            <div style="display:flex;gap:10px;padding:12px 0;border-bottom:1px solid #eceef1;align-items:center">
-              <div style="width:44px;height:44px;border-radius:10px;background:#fff1ec;overflow:hidden;flex-shrink:0;${b.image?`background-image:url(${esc(b.image)});background-size:cover;background-position:center;`:''}">
-                ${b.image ? '' : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:20px">${esc(b.logo||'🏪')}</div>`}
-              </div>
-              <div style="flex:1;min-width:0">
-                <div style="font-weight:600;font-size:14px">${esc(b.name)}</div>
-                <div style="font-size:11px;color:#6b7280">⭐ ${b.rating || 0} · 📍 ${esc(b.colony)}</div>
-                <span class="status ${st.cls}" style="margin-top:4px;display:inline-block">${st.label}</span>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:4px">
-                ${b.status === 'approved'
-                  ? `<button class="btn btn-ghost btn-sm" data-suspend-biz="${esc(b.id)}">⏸️</button>`
-                  : b.status === 'suspended'
-                  ? `<button class="btn btn-success btn-sm" data-reactivate-biz="${esc(b.id)}">🟢</button>`
-                  : ''}
-                <button class="btn btn-ghost btn-sm" data-view-biz="${esc(b.id)}">👁️</button>
-              </div>
-            </div>`;
-        }).join('')}
-      </div>
-      <div class="modal-actions"><button class="btn btn-primary" data-close-modal>Cerrar</button></div>
-    `);
-  }
-
-  function openCategoryForm(){
-    App.openModal(`
-      <h3>➕ Nueva categoría</h3>
-      <div class="form-group"><label>Nombre *</label><input id="cName" /></div>
-      <div class="form-group"><label>Emoji</label><input id="cEmoji" value="🍽️" /></div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" data-close-modal>Cancelar</button>
-        <button class="btn btn-primary" id="saveCat">Crear</button>
-      </div>
-    `);
-    document.getElementById('saveCat').onclick = async ()=>{
-      const name = document.getElementById('cName').value.trim();
-      const emoji = document.getElementById('cEmoji').value.trim() || '🍽️';
-      if(name.length < 2) return App.toast('Nombre muy corto');
-      const id = name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-      try {
-        await DB.add('categories', { name, emoji }, id);
-        await DB.loadAll();
-        App.closeModal();
-        App.toast('✅ Categoría creada');
-        App.render();
-      } catch(e){ App.toast('❌ ' + e.message); }
-    };
-  }
-
-  function openFeatured(){
-    const list = DB.get('businesses').filter(b => b.status === 'approved');
-    App.openModal(`
-      <h3>⭐ Destacar negocios</h3>
-      <p>Toca para activar/desactivar</p>
-      <div style="max-height:60vh;overflow-y:auto">
-        ${list.map(b=>`
-          <button class="menu-item" data-feat="${esc(b.id)}" style="border-bottom:1px solid #eceef1">
-            <span style="font-size:22px">${b.image ? `<span style="display:inline-block;width:30px;height:30px;border-radius:8px;background-image:url(${esc(b.image)});background-size:cover;background-position:center;"></span>` : esc(b.logo||'🏪')}</span>
-            <span style="flex:1;font-weight:500;text-align:left">${esc(b.name)}<br><small style="color:#6b7280;font-weight:400">${esc(b.colony)}</small></span>
-            <span style="font-size:18px">${b.featured ? '⭐' : '☆'}</span>
-          </button>`).join('')}
-      </div>
-      <div class="modal-actions"><button class="btn btn-primary" data-close-modal>Cerrar</button></div>
-    `);
-  }
-
-  async function seedDatabase(){
-    if(!confirm('¿Sembrar datos de ejemplo? Se agregarán categorías demo.')) return;
-    App.showLoading();
-    try {
-      const cats = [
-        {id:'hamburguesas',name:'Hamburguesas',emoji:'🍔'},
-        {id:'tacos',name:'Tacos',emoji:'🌮'},
-        {id:'pizzas',name:'Pizzas',emoji:'🍕'},
-        {id:'pollo',name:'Pollo',emoji:'🍗'},
-        {id:'sushi',name:'Sushi',emoji:'🍣'},
-        {id:'bebidas',name:'Bebidas',emoji:'🥤'},
-        {id:'postres',name:'Postres',emoji:'🍰'},
-        {id:'cafeterias',name:'Cafeterías',emoji:'☕'},
-        {id:'abarrotes',name:'Abarrotes',emoji:'🛒'},
-        {id:'farmacias',name:'Farmacias',emoji:'💊'}
-      ];
-      for(const c of cats){
-        try { await DB.add('categories', { name: c.name, emoji: c.emoji }, c.id); } catch(e){}
-      }
-      await DB.loadAll();
-      App.toast('🌱 Categorías sembradas');
-      App.render();
-    } catch(e){ App.toast('❌ ' + e.message); }
-    finally { App.hideLoading(); }
-  }
-
-  return {
-    stats, openPendingBusinesses, approveBiz, rejectBiz, suspendBiz, reactivateBiz,
-    openAllBusinesses, openCategoryForm, openFeatured, seedDatabase, bizReviewCard
-  };
-})();
-
-/* ============================================================
-   VIEWS
-   ============================================================ */
-const Views = (() => {
-
-  function businessesInZone(){
-    const colony = App.state.location.colony;
-    return DB.get('businesses').filter(b => b.status === 'approved' && b.colony === colony);
-  }
-
-  function bizCard(b){
-    const offers = Products.hasOffer(b.id);
-    const hasImg = !!b.image;
-    return `
-      <div class="biz-card" data-biz="${esc(b.id)}">
-        <div class="biz-img ${hasImg?'real-img':''}" style="${hasImg ? '' : 'background:linear-gradient(135deg,#ffe4d6,#ffd0bd)'}">
-          ${hasImg
-            ? `<img src="${esc(b.image)}" alt="${esc(b.name)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" /><div class="img-overlay"></div>`
-            : esc(b.cover || '🍽️')}
-          <span class="biz-badge ${b.open ? 'open' : 'closed'}">${b.open ? '🟢 Abierto' : '🔴 Cerrado'}</span>
-          ${offers ? '<span class="biz-offer">🔥 Oferta</span>' : ''}
-        </div>
-        <div class="biz-body">
-          <h3 class="biz-name">${esc(b.name)}</h3>
-          <div class="biz-meta">
-            <span class="star">⭐ ${(b.rating || 0).toFixed(1)}</span>
-            <span>🕐 ${b.timeMin}-${b.timeMax} min</span>
-            <span>🚚 Desde ${money(b.deliveryFrom)}</span>
-          </div>
-          <div class="biz-tags">
-            ${(b.categories||[]).slice(0,2).map(c=>{
-              const cat = DB.get('categories').find(x=>x.id===c);
-              return `<span class="tag primary">${esc(cat?.emoji||'')} ${esc(cat?.name||c)}</span>`;
-            }).join('')}
-          </div>
-        </div>
-      </div>`;
-  }
-
-  function bizRow(b){
-    const hasImg = !!b.image;
-    return `
-      <div class="biz-row" data-biz="${esc(b.id)}">
-        <div class="biz-thumb ${hasImg?'real-img':''}" style="${hasImg ? `background-image:url(${esc(b.image)});` : ''}">${hasImg ? '' : esc(b.logo||'🏪')}</div>
-        <div class="biz-info">
-          <h3>${esc(b.name)}</h3>
-          <p>${esc(b.description)}</p>
-          <div class="biz-meta" style="margin:0">
-            <span class="star">⭐ ${(b.rating || 0).toFixed(1)}</span>
-            <span>🕐 ${b.timeMin}-${b.timeMax} min</span>
-            <span>🚚 ${money(b.deliveryFrom)}</span>
-          </div>
-        </div>
-      </div>`;
-  }
-
-  function renderCarousel(promos){
-    const slides = promos.map((p, i) => {
-      const b = DB.get('businesses').find(x => x.id === p.businessId);
-      return `
-        <div class="promo-slide" data-slide="${i}" data-biz="${esc(p.businessId)}" style="background:${esc(p.bg)}">
-          <div class="promo-emoji">${esc(p.emoji)}</div>
-          <div class="promo-text">
-            <h3>${esc(p.title)}</h3>
-            <p>${esc(p.subtitle || '')}</p>
-            <span class="promo-biz">${esc(b?.logo||'')} ${esc(b?.name||'')}</span>
-          </div>
-          <span class="promo-badge">PROMO</span>
-        </div>`;
-    }).join('');
-    const dots = promos.map((_, i) => `<button class="promo-dot ${i===0?'active':''}" data-dot="${i}"></button>`).join('');
-    return `
-      <section class="section promo-section">
-        <div class="carousel">
-          <div class="carousel-track" id="carouselTrack">${slides}</div>
-          <div class="carousel-dots">${dots}</div>
-        </div>
-      </section>`;
-  }
-
-  function home(){
-    const cats = DB.get('categories').slice(0, 8);
-    const all = businessesInZone();
-    const featured = all.filter(b=>b.featured);
-    const newest = all.filter(b=>b.new);
-    const popular = [...all].sort((a,b)=>b.reviews-a.reviews);
-    const offers = all.filter(b=>Products.hasOffer(b.id));
-    const openNow = all.filter(b=>b.open);
-    const promos = Promos.activeForZone();
-
-    if(!all.length){
-      return `
-        ${promos.length ? renderCarousel(promos) : ''}
-        <section class="section">
-          <div class="empty">
-            <span class="emoji">🏜️</span>
-            <h3>Sin negocios en ${esc(App.state.location.colony)}</h3>
-            <p>Pronto habrá nuevos negocios. Cambia de fraccionamiento o vuelve más tarde.</p>
-            <button class="btn btn-primary" id="changeZoneBtn">Cambiar fraccionamiento</button>
-          </div>
-        </section>`;
-    }
-    return `
-      ${promos.length ? renderCarousel(promos) : ''}
-      <section class="section">
-        <div class="section-head"><h2>📂 Categorías</h2><button data-nav="categories">Ver todas</button></div>
-        <div class="cat-grid">
-          ${cats.map(c=>`<div class="cat-card" data-cat="${esc(c.id)}"><span class="emoji">${esc(c.emoji)}</span><small>${esc(c.name)}</small></div>`).join('')}
-        </div>
-      </section>
-      ${featured.length ? `<section class="section"><div class="section-head"><h2>🔥 Destacados</h2></div><div class="hscroll">${featured.map(bizCard).join('')}</div></section>` : ''}
-      ${offers.length ? `<section class="section"><div class="section-head"><h2>🎁 Ofertas</h2></div><div class="hscroll">${offers.map(bizCard).join('')}</div></section>` : ''}
-      <section class="section">
-        <div class="section-head"><h2>📍 Cerca de ti</h2><button>${esc(App.state.location.colony)}</button></div>
-        <div class="hscroll">${all.slice(0,5).map(bizCard).join('')}</div>
-      </section>
-      ${newest.length ? `<section class="section"><div class="section-head"><h2>🆕 Nuevos</h2></div><div class="hscroll">${newest.map(bizCard).join('')}</div></section>` : ''}
-      <section class="section">
-        <div class="section-head"><h2>⭐ Más vendidos</h2></div>
-        <div class="hscroll">${popular.slice(0,5).map(bizCard).join('')}</div>
-      </section>
-      ${openNow.length ? `<section class="section"><div class="section-head"><h2>🟢 Abierto ahora</h2></div>${openNow.slice(0,4).map(bizRow).join('')}</section>` : ''}
-    `;
-  }
-
-  function categories(){
-    const cats = DB.get('categories');
-    return `
-      <section class="section">
-        <div class="section-head"><h2>📂 Todas las categorías</h2></div>
-        <div class="cat-grid" style="grid-template-columns:repeat(3,1fr)">
-          ${cats.map(c=>`<div class="cat-card" data-cat="${esc(c.id)}"><span class="emoji">${esc(c.emoji)}</span><small>${esc(c.name)}</small></div>`).join('')}
-        </div>
-      </section>`;
-  }
-
-  function category(catId){
-    const cat = DB.get('categories').find(c=>c.id===catId);
-    if(!cat) return '<div class="empty"><h3>Categoría no encontrada</h3></div>';
-    const list = businessesInZone().filter(b=>b.categories.includes(catId));
-    const sort = App.state.filters.categorySort;
-    const sorted = Categories.sort(list, sort);
-    return `
-      <div class="menu-header">
-        <button class="back-btn" data-back>←</button>
-        <h1>${esc(cat.emoji)} ${esc(cat.name)}</h1>
-        <p style="margin:0;opacity:.9;font-size:13px">${sorted.length} negocios en ${esc(App.state.location.colony)}</p>
-      </div>
-      <div class="tabs">
-        ${[
-          ['rating','⭐ Mejor calificados'],
-          ['nearby','📍 Más cercanos'],
-          ['popular','🔥 Populares'],
-          ['delivery','🚚 Menor envío'],
-          ['fast','⚡ Mayor rapidez'],
-          ['new','🆕 Nuevos'],
-          ['offers','🎁 Ofertas']
-        ].map(([k,l])=>`<button class="tab ${sort===k?'active':''}" data-sort="${k}">${l}</button>`).join('')}
-      </div>
-      <section class="section">
-        ${sorted.length ? sorted.map(bizRow).join('') : `<div class="empty"><span class="emoji">😕</span><h3>Sin negocios</h3><p>Prueba otra categoría.</p></div>`}
-      </section>`;
-  }
-
-  function business(bizId){
-    const b = DB.get('businesses').find(x=>x.id===bizId);
-    if(!b) return '<div class="empty"><h3>Negocio no encontrado</h3></div>';
-    if(b.status !== 'approved') return '<div class="empty"><span class="emoji">⏸️</span><h3>Negocio no disponible</h3></div>';
-
-    const products = DB.get('products').filter(p=>p.businessId===bizId && p.active);
-    const groups = {};
-    products.forEach(p=>{(groups[p.category] ||= []).push(p);});
-    const cats = Object.keys(groups);
-    const isFav = Auth.favorites().businesses.includes(b.id);
-    const reviews = Reviews.forBusiness(bizId);
-    const hasCover = !!b.coverImage;
-    return `
-      <div class="menu-header ${hasCover?'real-cover':''}" style="${hasCover ? `background-image:url(${esc(b.coverImage)});` : ''}">
-        <button class="back-btn" data-back>←</button>
-        <button class="back-btn" style="position:absolute;top:16px;right:16px;left:auto;margin:0" data-fav-biz="${esc(b.id)}">${isFav ? '❤️' : '🤍'}</button>
-        <h1>${!hasCover ? esc(b.logo||'🏪') + ' ' : ''}${esc(b.name)}</h1>
-        <div class="menu-meta">
-          <span>⭐ ${(b.rating || 0).toFixed(1)} (${b.reviews || 0})</span>
-          <span>${b.open ? '🟢 Abierto' : '🔴 Cerrado'}</span>
-          <span>🚚 Desde ${money(b.deliveryFrom)}</span>
-          <span>🕐 ${b.timeMin}-${b.timeMax} min</span>
-        </div>
-      </div>
-      ${cats.length ? `
-        <div class="tabs">${cats.map((c,i)=>`<button class="tab ${i===0?'active':''}" data-ptab="${esc(c)}">${esc(c)}</button>`).join('')}</div>
-        <section class="section" id="prodList">${renderProducts(groups[cats[0]])}</section>
-      ` : `<div class="empty"><span class="emoji">📭</span><h3>Sin productos</h3></div>`}
-      <section class="section">
-        <div class="section-head">
-          <h2>⭐ Reseñas (${reviews.length})</h2>
-          <button data-review-biz="${esc(b.id)}">Escribir</button>
-        </div>
-        ${reviews.length ? reviews.slice(0,5).map(Reviews.renderCard).join('') : `<div class="empty" style="padding:24px"><span class="emoji">✍️</span><p>Sé el primero en opinar</p></div>`}
-      </section>
-      ${Cart.businessId() === b.id ? Cart.floatingBar() : ''}
-    `;
-  }
-
-  function renderProducts(list){
-    return list.map(p=>{
-      const qty = Cart.qty(p.id);
-      const hasImg = !!p.image;
-      return `
-        <div class="product" data-open-product="${esc(p.id)}">
-          <div class="product-img ${hasImg?'real-img':''}" style="${hasImg ? `background-image:url(${esc(p.image)});` : ''}">${hasImg ? '' : esc(p.emoji || '🍽️')}</div>
-          <div class="product-info">
-            <h4>${esc(p.name)}</h4>
-            <p>${esc(p.desc)}</p>
-            <div class="product-bottom">
-              <div class="price">${money(p.price)}${p.oldPrice ? `<span class="price-old">${money(p.oldPrice)}</span>` : ''}</div>
-              ${qty ? `
-                <div class="qty-ctrl">
-                  <button data-dec="${esc(p.id)}">−</button>
-                  <span>${qty}</span>
-                  <button data-inc="${esc(p.id)}">+</button>
-                </div>` : `<button class="add-btn" data-add="${esc(p.id)}">+</button>`}
-            </div>
-          </div>
-        </div>`;
-    }).join('');
-  }
-
-  function productDetail(productId){
-    const p = DB.get('products').find(x=>x.id===productId);
-    if(!p) return App.toast('Producto no encontrado');
-    const qty = Cart.qty(p.id) || 1;
-    const hasImg = !!p.image;
-    App.openModal(`
-      <div class="product-detail">
-        <div class="product-detail-hero ${hasImg?'real-img':''}" style="${hasImg ? `background-image:url(${esc(p.image)});` : ''}">${hasImg ? '' : esc(p.emoji || '🍽️')}</div>
-        <h2>${esc(p.name)}</h2>
-        <p class="desc">${esc(p.desc || '')}</p>
-        <div class="price-big">${money(p.price)}${p.oldPrice ? `<span class="old">${money(p.oldPrice)}</span>` : ''}</div>
-        <div class="qty-row">
-          <span>Cantidad</span>
-          <div class="qty-ctrl" id="detailQty">
-            <button data-ddec="${esc(p.id)}">−</button>
-            <span id="detailQtyVal">${qty}</span>
-            <button data-dinc="${esc(p.id)}">+</button>
-          </div>
-        </div>
-        <div class="modal-actions">
-          <button class="btn btn-ghost" data-close-modal>Cerrar</button>
-          <button class="btn btn-primary" id="addFromDetail" data-add-many="${esc(p.id)}">🛒 Agregar ${money(p.price * qty)}</button>
-        </div>
-      </div>
-    `);
-  }
-
-  function cart(){
-    const items = Cart.items();
-    if(!items.length) return `
-      <div class="empty"><span class="emoji">🛒</span><h3>Carrito vacío</h3>
-      <p>Agrega productos de tus negocios favoritos</p>
-      <button class="btn btn-primary" data-nav="home">Explorar</button></div>`;
-    const b = DB.get('businesses').find(x=>x.id===Cart.businessId());
-    const sub = Cart.subtotal();
-    const delivery = Cart.deliveryCost();
-    const disc = Cart.discount();
-    const coup = Cart.coupon();
-    const total = Cart.total();
-    const closedBanner = b && !b.open ? `<div style="background:#fee2e2;color:#991b1b;padding:12px 16px;border-radius:12px;margin:0 16px 12px;font-size:13px;font-weight:600">⚠️ Cerrado. No podrás enviar el pedido.</div>` : '';
-    const freeShipGap = b?.delivery?.freeFrom && sub < b.delivery.freeFrom ? b.delivery.freeFrom - sub : 0;
-    const freeShipBanner = freeShipGap > 0 ? `<div style="background:#fff1ec;color:var(--primary);padding:10px 16px;border-radius:12px;margin:0 16px 12px;font-size:13px;font-weight:600">🚚 Faltan ${money(freeShipGap)} para envío gratis</div>` : '';
-    return `
-      <div class="menu-header" style="padding-top:16px">
-        <h1 style="font-size:18px">🛒 Tu pedido</h1>
-        <p style="margin:4px 0 0;opacity:.9;font-size:13px">${esc(b.logo||'')} ${esc(b.name)} · ${esc(b.colony)}</p>
-      </div>
-      ${closedBanner}${freeShipBanner}
-      <section class="section">
-        ${items.map(it=>{
-          const img = it.image || '';
-          return `
-          <div class="cart-item">
-            <div class="cart-item-img" style="${img ? `background-image:url(${esc(img)});` : ''}">${img ? '' : esc(it.emoji || '🍽️')}</div>
-            <div class="cart-item-info">
-              <h4>${esc(it.name)}</h4>
-              <small>${money(it.price)} c/u</small>
-              <div style="margin-top:6px">
-                <div class="qty-ctrl" style="display:inline-flex">
-                  <button data-dec="${esc(it.id)}">−</button>
-                  <span>${it.qty}</span>
-                  <button data-inc="${esc(it.id)}">+</button>
-                </div>
-              </div>
-            </div>
-            <div style="text-align:right"><strong>${money(it.price * it.qty)}</strong></div>
-          </div>`;
-        }).join('')}
-      </section>
-      <div class="summary">
-        <div class="summary-row"><span>Subtotal</span><span>${money(sub)}</span></div>
-        <div class="summary-row"><span>Envío</span><span>${delivery ? money(delivery) : 'Gratis'}</span></div>
-        ${disc ? `<div class="summary-row" style="color:#16a34a"><span>🎟️ ${esc(coup.code)}</span><span>-${money(disc)}</span></div>` : ''}
-        <div class="summary-row total"><span>Total</span><span>${money(total)}</span></div>
-        ${coup
-          ? `<div class="coupon-tag">🎟️ ${esc(coup.code)} aplicado <button id="rmCoupon">✕</button></div>`
-          : `<div class="coupon-box">
-               <input id="couponInput" placeholder="Código de cupón" autocomplete="off" />
-               <button class="btn btn-ghost" id="applyCoupon">Aplicar</button>
-             </div>`}
-        <button class="btn btn-primary btn-block" style="margin-top:14px" id="checkoutBtn" ${b && !b.open ? 'disabled' : ''}>Confirmar pedido →</button>
-        <button class="btn btn-ghost btn-block" style="margin-top:8px" id="clearCart">Vaciar carrito</button>
-      </div>`;
-  }
-
-  function searchEmpty(){
-    return `<div class="empty"><span class="emoji">🔍</span><h3>¿Qué se te antoja?</h3><p>Buscando en ${esc(App.state.location.colony)}</p></div>`;
-  }
-  function search(){
-    return `<section class="section" style="padding-top:8px"><div id="searchResults" class="search-results">${searchEmpty()}</div></section>`;
-  }
-
-  function menuItem(icon, label, action){
-    const isNav = ['orders','favorites','vendor','admin'].includes(action);
-    return `
-      <button class="menu-item" ${isNav ? `data-nav="${esc(action)}"` : `data-action="${esc(action)}"`}>
-        <span style="font-size:20px">${esc(icon)}</span>
-        <span style="flex:1;font-weight:500;text-align:left">${esc(label)}</span>
-        <span style="color:#9ca3af">›</span>
-      </button>`;
-  }
-
-  function account(){
-    const u = Auth.profile() || {};
-    const notifEnabled = ('Notification' in window) && Notification.permission === 'granted';
-    const isAdmin = Auth.isAdmin();
-    const stats = Admin.stats();
-    return `
-      <section class="section" style="padding-top:8px">
-        <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);text-align:center">
-          <div style="width:72px;height:72px;border-radius:50%;background:#ffe4d6;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:34px">👤</div>
-          <h3 style="margin:0 0 4px">${esc(u.name || 'Usuario')}${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}</h3>
-          <p style="margin:0;color:#6b7280;font-size:13px">${esc(u.phone || u.email || '')}</p>
-          <p style="margin:6px 0 0;color:#6b7280;font-size:12px">📍 ${esc(App.state.location.colony)}</p>
-        </div>
-      </section>
-      ${isAdmin && stats.pendingBusinesses > 0 ? `
-      <section class="section">
-        <button class="btn btn-primary btn-block" data-action="admin-pending" style="background:#f59e0b;box-shadow:0 4px 12px rgba(245,158,11,.3)">
-          ⏳ ${stats.pendingBusinesses} solicitud(es) pendiente(s)
-        </button>
-      </section>` : ''}
-      <section class="section">
-        <div style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)">
-          ${menuItem('📦','Mis pedidos','orders')}
-          ${menuItem('❤️','Favoritos','favorites')}
-          ${menuItem('🔔', notifEnabled ? 'Notificaciones activas' : 'Activar notificaciones','push-notif')}
-          ${menuItem('🏪','Panel de vendedor','vendor')}
-          ${isAdmin ? menuItem('⚙️','Administración','admin') : ''}
-        </div>
-      </section>
-      <section class="section">
-        <button class="btn btn-ghost btn-block" id="logoutBtn" style="color:#dc2626">Cerrar sesión</button>
-      </section>`;
-  }
-
-  function timeline(status){
-    if(status === 'cancelled') return `<div style="text-align:center;padding:10px;color:#dc2626;font-weight:700;font-size:13px">❌ Cancelado</div>`;
-    const steps = [
-      { key:'pending', icon:'📥', label:'Recibido' },
-      { key:'preparing', icon:'👨‍🍳', label:'Preparando' },
-      { key:'onway', icon:'🚚', label:'En camino' },
-      { key:'delivered', icon:'✅', label:'Entregado' }
-    ];
-    const current = status === 'confirmed' ? 'pending' : status;
-    const idx = steps.findIndex(s => s.key === current);
-    return `
-      <div class="order-timeline">
-        ${steps.map((s, i) => {
-          const done = i < idx, active = i === idx;
-          return `<div class="order-step ${done?'done':''} ${active?'active':''}">
-            <div class="dot">${done || active ? s.icon : '○'}</div>
-            <small>${esc(s.label)}</small>
-          </div>`;
-        }).join('')}
-      </div>`;
-  }
-
-  function orders(){
-    const list = Orders.listForUser();
-    if(!list.length) return `
-      <div class="empty"><span class="emoji">📦</span><h3>Sin pedidos</h3>
-      <p>Tus pedidos aparecerán aquí</p>
-      <button class="btn btn-primary" data-nav="home">Hacer uno</button></div>`;
-    return `<section class="section" style="padding-top:8px">
-      <div class="section-head"><h2>📦 Mis pedidos</h2></div>
-      ${list.map(o=>`
-        <div class="order-card-user">
-          <div class="order-head">
-            <strong style="font-size:15px">Pedido #${o.number}</strong>
-            <span class="status ${esc(o.status)}">${esc(Orders.statusLabel(o.status))}</span>
-          </div>
-          <div class="order-biz">${esc(o.businessName)} · 📍 ${esc(o.colony || '')}</div>
-          ${timeline(o.status)}
-          <div class="order-items">${o.items.map(i=>`${i.qty}× ${esc(i.name)}`).join(' · ')}</div>
-          <div class="order-total"><span>${o.items.length} productos</span><strong>${money(o.total)}</strong></div>
-          <div style="font-size:12px;color:#9ca3af;margin-top:6px">${esc(o.date)}</div>
-          <div style="display:flex;gap:8px;margin-top:10px">
-            ${o.status === 'delivered' ? `<button class="btn btn-primary btn-sm" style="flex:1" data-review-order="${esc(o.id)}">⭐ Reseñar</button>` : ''}
-            ${o.status === 'pending' ? `<button class="btn btn-ghost btn-sm" style="flex:1;color:#dc2626" data-cancel-order="${esc(o.id)}">Cancelar</button>` : ''}
-            <button class="btn btn-outline btn-sm" style="flex:1" data-reorder="${esc(o.id)}">🔁 Repetir</button>
-          </div>
-        </div>`).join('')}
-    </section>`;
-  }
-
-  function favorites(){
-    const favs = Auth.favorites();
-    const bizs = DB.get('businesses').filter(b => favs.businesses.includes(b.id) && b.status === 'approved');
-    const prods = DB.get('products').filter(p => favs.products.includes(p.id));
-    if(!bizs.length && !prods.length) return `
-      <div class="empty"><span class="emoji">❤️</span><h3>Sin favoritos</h3>
-      <p>Guarda tus negocios y productos preferidos</p></div>`;
-    return `<section class="section" style="padding-top:8px">
-      ${bizs.length ? `<div class="section-head"><h2>🏪 Negocios</h2></div>${bizs.map(bizRow).join('')}` : ''}
-      ${prods.length ? `<div class="section-head" style="margin-top:16px"><h2>🍽️ Productos</h2></div>
-        ${prods.map(p=>`
-          <div class="biz-row">
-            <div class="biz-thumb ${p.image?'real-img':''}" style="${p.image ? `background-image:url(${esc(p.image)});` : ''}">${p.image ? '' : esc(p.emoji || '🍽️')}</div>
-            <div class="biz-info"><h3>${esc(p.name)}</h3><p>${esc(p.desc)}</p><strong>${money(p.price)}</strong></div>
-          </div>`).join('')}` : ''}
-    </section>`;
-  }
-
-  function vendorPanel(){
-    const v = Vendors.current();
-    if(!v) return `
-      <div class="empty"><span class="emoji">🏪</span><h3>Registra tu negocio</h3>
-      <p>Únete al marketplace y recibe pedidos por WhatsApp</p>
-      <button class="btn btn-primary" id="regVendorBtn">Registrarme como vendedor</button></div>`;
-
-    if(v.status === 'pending'){
-      return `
-        <div class="menu-header">
-          <button class="back-btn" data-back>←</button>
-          <h1>${esc(v.logo||'🏪')} ${esc(v.name)}</h1>
-          <div class="menu-meta"><span class="status pending">⏳ Pendiente de aprobación</span></div>
-        </div>
-        <section class="section">
-          <div class="empty">
-            <span class="emoji">⏳</span>
-            <h3>Tu solicitud está en revisión</h3>
-            <p>Un administrador revisará los requisitos. Te notificaremos cuando sea aprobada.</p>
-            <div style="background:#fff;border-radius:12px;padding:16px;text-align:left;margin-top:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
-              <div style="font-size:12px;color:#6b7280;text-transform:uppercase;font-weight:700;margin-bottom:8px">Resumen</div>
-              <div style="font-size:13px;line-height:1.8">
-                👤 ${esc(v.owner)}<br>
-                📱 ${esc(v.whatsapp)}<br>
-                📍 ${esc(v.address)}<br>
-                🏠 ${esc(v.colony)}<br>
-                🕐 ${esc(v.schedule)}<br>
-                🚚 ${money(v.deliveryFrom)}
-              </div>
-            </div>
-          </div>
-        </section>`;
-    }
-
-    if(v.status === 'rejected'){
-      return `
-        <div class="menu-header">
-          <button class="back-btn" data-back>←</button>
-          <h1>${esc(v.logo||'🏪')} ${esc(v.name)}</h1>
-          <div class="menu-meta"><span class="status rejected">❌ Rechazado</span></div>
-        </div>
-        <section class="section">
-          <div class="empty">
-            <span class="emoji">❌</span>
-            <h3>Solicitud rechazada</h3>
-            <p style="background:#fee2e2;color:#991b1b;padding:12px;border-radius:10px;font-size:13px">
-              <strong>Motivo:</strong> ${esc(v.rejectionReason || 'No especificado')}
-            </p>
-            <button class="btn btn-primary" id="reapplyVendor" style="margin-top:12px">Volver a enviar solicitud</button>
-          </div>
-        </section>`;
-    }
-
-    if(v.status === 'suspended'){
-      return `
-        <div class="menu-header">
-          <button class="back-btn" data-back>←</button>
-          <h1>${esc(v.logo||'🏪')} ${esc(v.name)}</h1>
-          <div class="menu-meta"><span class="status suspended">⏸️ Suspendido</span></div>
-        </div>
-        <section class="section">
-          <div class="empty">
-            <span class="emoji">⏸️</span>
-            <h3>Negocio suspendido</h3>
-            <p>Contacta al administrador para más información.</p>
-          </div>
-        </section>`;
-    }
-
-    const products = Products.forBusiness(v.id);
-    const cats = DB.get('categories');
-    const orders = Orders.forBusiness(v.id);
-    const pending = orders.filter(o => o.status === 'pending');
-    const preparing = orders.filter(o => o.status === 'preparing' || o.status === 'onway');
-    const delivered = orders.filter(o => o.status === 'delivered' || o.status === 'cancelled');
-
-    function orderCard(o){
-      return `
-        <div class="vendor-order ${esc(o.status)}">
-          <div class="vo-head">
-            <strong style="font-size:14px">#${o.number}</strong>
-            <span class="status ${esc(o.status)}">${esc(Orders.statusLabel(o.status))}</span>
-          </div>
-          <div class="vo-customer">
-            ${o.customer?.name ? `👤 ${esc(o.customer.name)}<br>` : ''}
-            ${o.customer?.address ? `📍 ${esc(o.customer.address)}<br>` : ''}
-            ${o.customer?.colony ? `🏠 ${esc(o.customer.colony)}<br>` : ''}
-            ${o.customer?.pay ? `💳 ${esc(o.customer.pay)}` : ''}
-          </div>
-          <div class="order-items">${o.items.map(i=>`${i.qty}× ${esc(i.name)}`).join(' · ')}</div>
-          <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-top:8px">
-            <span>Total</span><span>${money(o.total)}</span>
-          </div>
-          <div class="vo-actions">
-            ${o.status === 'pending' ? `
-              <button class="btn btn-primary btn-sm" data-order-status="${esc(o.id)}" data-new-status="preparing">👨‍🍳 Preparando</button>
-              <button class="btn btn-ghost btn-sm" style="color:#dc2626" data-order-status="${esc(o.id)}" data-new-status="cancelled">❌ Cancelar</button>
-            ` : ''}
-            ${o.status === 'preparing' ? `<button class="btn btn-primary btn-sm" data-order-status="${esc(o.id)}" data-new-status="onway">🚚 Enviar</button>` : ''}
-            ${o.status === 'onway' ? `<button class="btn btn-primary btn-sm" data-order-status="${esc(o.id)}" data-new-status="delivered">✅ Entregado</button>` : ''}
-            ${(o.status === 'delivered' || o.status === 'cancelled') ? `<button class="btn btn-ghost btn-sm" data-remove-order="${esc(o.id)}">🗑️ Quitar</button>` : ''}
-            ${o.customer?.phone ? `<button class="btn btn-outline btn-sm" data-wa-order="${esc(o.id)}">📲 WhatsApp</button>` : ''}
-          </div>
-        </div>`;
-    }
-
-    return `
-      <div class="menu-header">
-        <button class="back-btn" data-back>←</button>
-        <h1>${esc(v.logo||'🏪')} ${esc(v.name)}</h1>
-        <div class="menu-meta">
-          <span>⭐ ${(v.rating || 0).toFixed(1)}</span>
-          <span>${v.open ? '🟢 Abierto' : '🔴 Cerrado'}</span>
-          <span>📍 ${esc(v.colony)}</span>
-        </div>
-      </div>
-      <section class="section">
-        <button class="btn ${v.open ? 'btn-primary' : 'btn-ghost'} btn-block" id="toggleOpen">
-          ${v.open ? '🟢 Abierto — Cerrar' : '🔴 Cerrado — Abrir'}
-        </button>
-      </section>
-      <section class="section">
-        <div class="section-head">
-          <h2>📦 Pedidos entrantes</h2>
-          ${pending.length ? `<span class="status pending">${pending.length} nuevos</span>` : ''}
-        </div>
-        ${pending.length ? pending.map(orderCard).join('') : `<div class="empty" style="padding:20px"><span class="emoji">📭</span><p>Sin pedidos nuevos</p></div>`}
-      </section>
-      ${preparing.length ? `<section class="section"><div class="section-head"><h2>👨‍🍳 En proceso</h2></div>${preparing.map(orderCard).join('')}</section>` : ''}
-      ${delivered.length ? `<section class="section"><div class="section-head"><h2>✅ Historial</h2></div>${delivered.slice(0,5).map(orderCard).join('')}</section>` : ''}
-      <section class="section">
-        <div class="section-head"><h2>📍 Zona</h2></div>
-        <select id="vendorZone" style="width:100%;padding:12px;border:1.5px solid #eceef1;border-radius:12px;background:#fafbfc">
-          ${ZONE_NAMES.map(z => `<option ${z===v.colony?'selected':''}>${esc(z)}</option>`).join('')}
-        </select>
-      </section>
-      <section class="section">
-        <div class="section-head"><h2>🎨 Imágenes</h2></div>
-        ${ImageUtils.uploadBox('vLogoEdit', '🖼️ Logo', v.image || '')}
-        ${ImageUtils.uploadBox('vCoverEdit', '🎨 Portada', v.coverImage || '')}
-        <button class="btn btn-primary btn-block" id="saveBizImages" style="margin-top:8px">💾 Guardar imágenes</button>
-      </section>
-      <section class="section">
-        <div class="section-head"><h2>📂 Categorías</h2></div>
-        <div class="chip-select">
-          ${cats.map(c=>`<button class="chip ${v.categories.includes(c.id)?'active':''}" data-vcat="${esc(c.id)}">${esc(c.emoji)} ${esc(c.name)}</button>`).join('')}
-        </div>
-      </section>
-      <section class="section">
-        <div class="section-head"><h2>🍽️ Productos (${products.length})</h2>
-          <button id="addProductBtn" style="color:#ff4d2e;font-weight:600">+ Nuevo</button>
-        </div>
-        ${products.map(p=>`
-          <div class="product">
-            <div class="product-img ${p.image?'real-img':''}" style="${p.image ? `background-image:url(${esc(p.image)});` : ''}">${p.image ? '' : esc(p.emoji || '🍽️')}</div>
-            <div class="product-info">
-              <h4>${esc(p.name)}</h4>
-              <p>${esc(p.desc)}</p>
-              <div class="product-bottom">
-                <strong>${money(p.price)}</strong>
-                <button class="btn btn-ghost btn-sm" data-edit-product="${esc(p.id)}">Editar</button>
-              </div>
-            </div>
-          </div>`).join('')}
-      </section>`;
-  }
-
-  function admin(){
-    const stats = Admin.stats();
-    return `
-      <div class="menu-header" style="background:linear-gradient(160deg,#1e293b,#334155)">
-        <button class="back-btn" data-back>←</button>
-        <h1>⚙️ Administración</h1>
-      </div>
-      ${stats.pendingBusinesses > 0 ? `
-      <section class="section">
-        <button class="btn btn-block" data-action="admin-pending" style="background:#f59e0b;color:#fff;box-shadow:0 4px 12px rgba(245,158,11,.3)">
-          ⏳ ${stats.pendingBusinesses} negocio(s) pendiente(s) de aprobación
-        </button>
-      </section>` : ''}
-      <section class="section">
-        <div class="cat-grid" style="grid-template-columns:repeat(2,1fr)">
-          ${[
-            ['🏪','Aprobados',stats.approvedBusinesses],
-            ['🍽️','Productos',stats.products],
-            ['📦','Pedidos',stats.orders],
-            ['⭐','Reseñas',stats.reviews],
-            ['🎠','Promos',stats.promos],
-            ['🎟️','Cupones',stats.coupons],
-            ['👥','Usuarios',stats.users],
-            ['📂','Categorías',stats.categories]
-          ].map(([e,l,n])=>`
-            <div class="cat-card" style="padding:16px">
-              <span class="emoji">${esc(e)}</span>
-              <div style="font-size:22px;font-weight:700">${n}</div>
-              <small>${esc(l)}</small>
-            </div>`).join('')}
-        </div>
-      </section>
-      <section class="section">
-        <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
-          <div style="font-size:12px;color:#6b7280;text-transform:uppercase;font-weight:700;letter-spacing:.5px">💰 Ingresos carrusel</div>
-          <div style="font-size:26px;font-weight:800;margin-top:4px">${money(stats.promosRevenue)}</div>
-        </div>
-      </section>
-      <section class="section">
-        <div class="section-head"><h2>⚡ Acciones</h2></div>
-        <div style="background:#fff;border-radius:16px;overflow:hidden">
-          ${menuItem('⏳','Revisar solicitudes','admin-pending')}
-          ${menuItem('🏪','Todos los negocios','admin-biz')}
-          ${menuItem('⭐','Destacar negocios','admin-feat')}
-          ${menuItem('🎠','Carrusel de promos','admin-promos')}
-          ${menuItem('🎟️','Cupones','admin-coupons')}
-          ${menuItem('📂','Crear categoría','admin-cat')}
-          ${menuItem('🌱','Sembrar datos demo','admin-seed')}
-        </div>
-      </section>`;
-  }
-
-  return { home, categories, category, business, cart, search, searchEmpty, account, orders, favorites, vendorPanel, admin, renderProducts, productDetail, bizCard, bizRow, businessesInZone, renderCarousel };
-})();
-
-/* ============================================================
-   CATEGORÍAS (búsqueda + orden)
-   ============================================================ */
-const Categories = (() => {
-  function sort(list, by){
-    const l = [...list];
-    switch(by){
-      case 'rating': return l.sort((a,b)=>(b.rating||0)-(a.rating||0));
-      case 'nearby': return l;
-      case 'popular': return l.sort((a,b)=>(b.reviews||0)-(a.reviews||0));
-      case 'delivery': return l.sort((a,b)=>(a.deliveryFrom||0)-(b.deliveryFrom||0));
-      case 'fast': return l.sort((a,b)=>(a.timeMin||0)-(b.timeMin||0));
-      case 'new': return l.sort((a,b)=>(b.new?1:0)-(a.new?1:0));
-      case 'offers': return l.sort((a,b)=>(Products.hasOffer(b.id)?1:0)-(Products.hasOffer(a.id)?1:0));
-      default: return l;
-    }
-  }
-  function search(q){
-    const colony = App.state.location.colony;
-    const businesses = DB.get('businesses').filter(b =>
-      b.status === 'approved' && b.colony === colony &&
-      (b.name.toLowerCase().includes(q) || (b.description||'').toLowerCase().includes(q))
-    );
-    const bizIds = businesses.map(b => b.id);
-    const products = DB.get('products').filter(p =>
-      p.active && bizIds.includes(p.businessId) &&
-      (p.name.toLowerCase().includes(q) || (p.desc||'').toLowerCase().includes(q))
-    );
-    const categories = DB.get('categories').filter(c => c.name.toLowerCase().includes(q));
-    return { businesses, products, categories };
-  }
-  function renderSearch(container, q){
-    const { businesses, products, categories } = search(q);
-    if(!businesses.length && !products.length && !categories.length){
-      container.innerHTML = `<div class="empty"><span class="emoji">😕</span><h3>Sin resultados</h3><p>Intenta otra palabra en ${esc(App.state.location.colony)}</p></div>`;
-      return;
-    }
-    let html = '';
-    if(categories.length){
-      html += `<div class="group-title">📂 Categorías</div><div class="cat-grid" style="grid-template-columns:repeat(4,1fr);padding:0 16px">`;
-      html += categories.map(c=>`<div class="cat-card" data-cat="${esc(c.id)}"><span class="emoji">${esc(c.emoji)}</span><small>${esc(c.name)}</small></div>`).join('');
-      html += `</div>`;
-    }
-    if(businesses.length){
-      html += `<div class="group-title">🏪 Negocios</div>`;
-      html += businesses.map(Views.bizRow).join('');
-    }
-    if(products.length){
-      html += `<div class="group-title">🍽️ Productos</div>`;
-      html += products.map(p=>{
-        const b = DB.get('businesses').find(x=>x.id===p.businessId);
-        return `
-          <div class="product" data-open-product="${esc(p.id)}">
-            <div class="product-img ${p.image?'real-img':''}" style="${p.image ? `background-image:url(${esc(p.image)});` : ''}">${p.image ? '' : esc(p.emoji || '🍽️')}</div>
-            <div class="product-info">
-              <h4>${esc(p.name)}</h4>
-              <p>${esc(p.desc)} · ${esc(b?.name || '')}</p>
-              <div class="product-bottom">
-                <strong>${money(p.price)}</strong>
-                <button class="add-btn" data-add="${esc(p.id)}">+</button>
-              </div>
-            </div>
-          </div>`;
-      }).join('');
-    }
-    container.innerHTML = html;
-  }
-  return { sort, search, renderSearch };
-})();
-
-/* ============================================================
-   APP — Router principal
-   ============================================================ */
-const App = (() => {
-  const state = {
-    view:'home',
-    stack:[],
-    location:{ city:'Veracruz', colony:'Fraccionamiento Río Medio 3' },
-    filters:{ categorySort:'rating' }
-  };
-
-  function toast(msg, ms=2400){
-    const t = document.getElementById('toast');
-    if(!t) return;
+const AuthUI = (() => {
+  function $(id){ return document.getElementById(id); }
+  function show(el){ el.classList.remove('hidden'); }
+  function hide(el){ el.classList.add('hidden'); }
+  function toast(msg, ms = 2400){
+    const t = $('toast');
     t.textContent = msg;
     t.classList.remove('hidden');
     clearTimeout(t._t);
     t._t = setTimeout(()=>t.classList.add('hidden'), ms);
   }
-  function openModal(html){
-    document.getElementById('modalContent').innerHTML = html;
-    document.getElementById('modal').classList.remove('hidden');
-  }
-  function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
-  function showLoading(){ document.getElementById('loadingOverlay').classList.remove('hidden'); }
-  function hideLoading(){ document.getElementById('loadingOverlay').classList.add('hidden'); }
-
-  function navigate(view, opts={}){
-    state.view = view;
-    state.stack = opts.stack || [];
-    if(view !== 'search'){
-      const inp = document.getElementById('globalSearch');
-      if(inp){ inp.value = ''; toggleClearBtn(false); }
-    }
-    render();
-    window.scrollTo(0,0);
-    updateNav();
-  }
-  function toggleClearBtn(show){
-    const b = document.getElementById('clearSearch');
-    if(b) b.classList.toggle('hidden', !show);
-  }
-  function updateNav(){
-    document.querySelectorAll('.nav-item').forEach(b=>{
-      b.classList.toggle('active', b.dataset.view === state.view);
-    });
-  }
-  function render(){
-    const main = document.getElementById('appMain');
-    switch(state.view){
-      case 'home': main.innerHTML = Views.home(); break;
-      case 'categories': main.innerHTML = Views.categories(); break;
-      case 'category': main.innerHTML = Views.category(state.stack[0]); break;
-      case 'business': main.innerHTML = Views.business(state.stack[0]); break;
-      case 'cart': main.innerHTML = Views.cart(); break;
-      case 'search': main.innerHTML = Views.search(); break;
-      case 'account': main.innerHTML = Views.account(); break;
-      case 'orders': main.innerHTML = Views.orders(); break;
-      case 'favorites': main.innerHTML = Views.favorites(); break;
-      case 'vendor': main.innerHTML = Views.vendorPanel(); break;
-      case 'admin': main.innerHTML = Views.admin(); break;
-      default: main.innerHTML = Views.home();
-    }
-    Cart.updateBadge();
-    Notifications.updateBadge();
-    setTimeout(initCarousel, 60);
-    setTimeout(()=>{
-      if(typeof ImageUtils.setup === 'function'){
-        ImageUtils.setup('vLogoEdit');
-        ImageUtils.setup('vCoverEdit');
+  function loading(on){
+    let ov = document.getElementById('loadingOverlay');
+    if(on){
+      if(!ov){
+        ov = document.createElement('div');
+        ov.id = 'loadingOverlay';
+        ov.className = 'loading-overlay';
+        ov.innerHTML = '<div class="loading-spinner"></div>';
+        document.body.appendChild(ov);
       }
-    }, 80);
+    } else if(ov) ov.remove();
   }
 
-  async function init(){
+  function validEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+  function validPhone(p){ return /^[\d\s\+\-\(\)]{8,}$/.test(p); }
+
+  function updateStrength(pwd){
+    const el = $('pwdStrength');
+    if(!el) return;
+    el.className = 'pwd-strength';
+    if(!pwd) return;
+    let score = 0;
+    if(pwd.length >= 6) score++;
+    if(pwd.length >= 10) score++;
+    if(/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) score++;
+    if(/\d/.test(pwd)) score++;
+    if(/[^A-Za-z0-9]/.test(pwd)) score++;
+    if(score <= 2) el.classList.add('weak');
+    else if(score <= 4) el.classList.add('medium');
+    else el.classList.add('strong');
+  }
+
+  function translateError(code){
+    const map = {
+      'auth/email-already-in-use': 'Este correo ya está registrado',
+      'auth/invalid-email': 'Correo electrónico inválido',
+      'auth/weak-password': 'Contraseña muy débil (mín. 6 caracteres)',
+      'auth/user-not-found': 'Usuario no encontrado',
+      'auth/wrong-password': 'Contraseña incorrecta',
+      'auth/invalid-credential': 'Correo o contraseña incorrectos',
+      'auth/too-many-requests': 'Demasiados intentos. Intenta más tarde',
+      'auth/popup-closed-by-user': 'Cerraste la ventana de Google',
+      'auth/popup-blocked': 'Permite las ventanas emergentes',
+      'auth/network-request-failed': 'Sin conexión a internet',
+      'auth/account-exists-with-different-credential': 'Ese correo ya está registrado con otro método',
+      'auth/operation-not-allowed': 'Método no habilitado en Firebase Console',
+      'auth/unauthorized-domain': 'Dominio no autorizado en Firebase Console'
+    };
+    return map[code] || 'Error: ' + code;
+  }
+
+  function showScreen(name){
+    ['welcomeScreen','roleScreen','registerScreen','loginScreen'].forEach(id=>{
+      const el = $(id);
+      if(el) el.classList.add('hidden');
+    });
+    const target = $({
+      welcome:'welcomeScreen',
+      role:'roleScreen',
+      register:'registerScreen',
+      login:'loginScreen'
+    }[name]);
+    if(target) show(target);
+    window.scrollTo(0,0);
+  }
+
+  let selectedRole = null;
+
+  function selectRole(role){
+    selectedRole = role;
+    document.querySelectorAll('.role-card').forEach(c=>{
+      c.classList.toggle('selected', c.dataset.role === role);
+    });
+    $('btnContinueRole').disabled = !role;
+  }
+
+  async function googleAuth(){
+    loading(true);
     try {
-      const profile = await Auth.init();
-      if(!profile) return; // Redirigiendo a bienvenida
+      const cred = await signInWithPopup(auth, googleProvider);
+      const user = cred.user;
+      const userRef = doc(db, 'users', user.uid);
+      const snap = await getDoc(userRef);
 
-      await DB.loadAll();
-
-      // Lee ?view= de la URL
-      const params = new URLSearchParams(window.location.search);
-      const initialView = params.get('view');
-      if(initialView && ['home','vendor','orders','favorites','account','cart','admin'].includes(initialView)){
-        state.view = initialView;
+      if(snap.exists()){
+        const data = snap.data();
+        loading(false);
+        toast(`¡Bienvenido, ${(data.name || user.displayName || 'Usuario').split(' ')[0]}! 👋`);
+        setTimeout(()=> finishRedirect(data.role || 'customer'), 500);
+      } else {
+        loading(false);
+        window._pendingUid = user.uid;
+        window._pendingGoogle = {
+          name: user.displayName || '',
+          email: user.email || ''
+        };
+        showScreen('role');
+        toast('Completa tu registro');
       }
     } catch(e){
-      console.error('Init error:', e);
+      loading(false);
+      toast('❌ ' + translateError(e.code));
+    }
+  }
+
+  async function doRegister(){
+    const name = $('regName').value.trim();
+    const email = $('regEmail').value.trim().toLowerCase();
+    const phone = $('regPhone').value.trim();
+    const password = $('regPassword').value;
+    const terms = $('regTerms').checked;
+    const isGoogle = !!window._pendingUid;
+
+    if(!name) return toast('Ingresa tu nombre');
+    if(!validEmail(email)) return toast('Ingresa un correo válido');
+    if(!validPhone(phone)) return toast('Ingresa un teléfono válido');
+    if(!isGoogle && password.length < 6) return toast('La contraseña debe tener al menos 6 caracteres');
+    if(!terms) return toast('Debes aceptar los términos');
+
+    let businessData = null;
+    if(selectedRole === 'vendor'){
+      const bizName = $('regBizName').value.trim();
+      const whatsapp = $('regWhatsapp').value.replace(/\D/g,'');
+      const category = $('regCategory').value;
+      const address = $('regBizAddress').value.trim();
+      if(!bizName || bizName.length < 3) return toast('Nombre del negocio muy corto');
+      if(!/^\d{10,15}$/.test(whatsapp)) return toast('WhatsApp inválido (10-15 dígitos)');
+      if(!address || address.length < 5) return toast('Dirección muy corta');
+      businessData = { name: bizName, whatsapp, category, address };
     }
 
-    setTimeout(()=>{
-      const splash = document.getElementById('splash');
-      if(splash) splash.classList.add('hide');
-      document.getElementById('app').classList.remove('hidden');
-      document.getElementById('locationText').textContent = state.location.colony;
-      render();
-      updateNav();
-    }, 700);
-
-    document.querySelectorAll('.nav-item').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const v = btn.dataset.view;
-        const inp = document.getElementById('globalSearch');
-        if(v !== 'search' && inp){ inp.value=''; toggleClearBtn(false); }
-        if(v === 'search' && inp){
-          inp.value=''; toggleClearBtn(false);
-          navigate('search');
-          setTimeout(()=>inp.focus(), 120);
-          return;
+    loading(true);
+    try {
+      let uid;
+      if(isGoogle){
+        uid = window._pendingUid;
+        const currentUser = auth.currentUser;
+        if(currentUser && name) {
+          try { await updateProfile(currentUser, { displayName: name }); } catch(e){}
         }
-        navigate(v);
-      });
-    });
-
-    const searchInput = document.getElementById('globalSearch');
-    const searchBar = document.getElementById('searchBar');
-    const clearBtn = document.getElementById('clearSearch');
-
-    searchBar.addEventListener('click', e=>{
-      if(state.view !== 'search') navigate('search');
-      if(e.target !== searchInput) setTimeout(()=>searchInput.focus(), 50);
-    });
-    let searchTimer;
-    searchInput.addEventListener('input', e=>{
-      const q = e.target.value.trim().toLowerCase();
-      toggleClearBtn(!!q);
-      if(state.view !== 'search') navigate('search');
-      clearTimeout(searchTimer);
-      searchTimer = setTimeout(()=>{
-        const res = document.getElementById('searchResults');
-        if(!res) return;
-        if(!q){ res.innerHTML = Views.searchEmpty(); return; }
-        Categories.renderSearch(res, q);
-      }, 200);
-    });
-    searchInput.addEventListener('focus', ()=>{
-      if(state.view !== 'search') navigate('search');
-    });
-    clearBtn.addEventListener('click', e=>{
-      e.stopPropagation();
-      searchInput.value = '';
-      toggleClearBtn(false);
-      searchInput.focus();
-      const res = document.getElementById('searchResults');
-      if(res) res.innerHTML = Views.searchEmpty();
-    });
-
-    document.getElementById('locationBtn').addEventListener('click', showLocationModal);
-    document.getElementById('notifBtn').addEventListener('click', ()=> Notifications.openCenter());
-    document.getElementById('modal').addEventListener('click', e=>{
-      if(e.target.hasAttribute('data-close-modal')) closeModal();
-    });
-  }
-
-  function showLocationModal(){
-    const current = state.location.colony;
-    openModal(`
-      <h3>📍 Selecciona tu fraccionamiento</h3>
-      <p>Los negocios mostrados dependerán de la zona elegida.</p>
-      <div class="form-group">
-        <label>Zona</label>
-        <select id="colonySel">${ZONE_NAMES.map(z => `<option ${z===current?'selected':''}>${esc(z)}</option>`).join('')}</select>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" data-close-modal>Cancelar</button>
-        <button class="btn btn-primary" id="saveLoc">Guardar</button>
-      </div>
-    `);
-    document.getElementById('saveLoc').onclick = ()=>{
-      state.location = { city:'Veracruz', colony: document.getElementById('colonySel').value };
-      document.getElementById('locationText').textContent = state.location.colony;
-      const cartBiz = Cart.businessId();
-      if(cartBiz){
-        const b = DB.get('businesses').find(x=>x.id===cartBiz);
-        if(b && b.colony !== state.location.colony){
-          Cart.clear();
-          toast('🛒 Carrito vaciado por cambio de zona');
-        }
+      } else {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        uid = cred.user.uid;
+        try { await updateProfile(cred.user, { displayName: name }); } catch(e){}
       }
-      closeModal();
-      render();
-      toast('📍 Ubicación actualizada');
-    };
+
+      const payload = {
+        name, email, phone,
+        role: selectedRole || 'customer',
+        business: businessData,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      await setDoc(doc(db, 'users', uid), payload, { merge: true });
+      window._pendingUid = null;
+      window._pendingGoogle = null;
+
+      toast(`¡Bienvenido, ${name.split(' ')[0]}! 👋`);
+      setTimeout(()=> finishRedirect(payload.role), 600);
+    } catch(e){
+      loading(false);
+      toast('❌ ' + translateError(e.code));
+    }
   }
 
-  return { init, navigate, render, state, toast, openModal, closeModal, showLoading, hideLoading, updateNav };
+  async function doLogin(){
+    const email = $('loginEmail').value.trim().toLowerCase();
+    const password = $('loginPassword').value;
+
+    if(!validEmail(email)) return toast('Ingresa un correo válido');
+    if(!password) return toast('Ingresa tu contraseña');
+
+    loading(true);
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      const userRef = doc(db, 'users', cred.user.uid);
+      const snap = await getDoc(userRef);
+
+      let role = 'customer';
+      if(snap.exists()){
+        role = snap.data().role || 'customer';
+      } else {
+        await setDoc(userRef, {
+          name: cred.user.displayName || 'Usuario',
+          email: cred.user.email,
+          phone: '',
+          role: 'customer',
+          createdAt: serverTimestamp()
+        });
+      }
+
+      toast('¡Bienvenido! 👋');
+      setTimeout(()=> finishRedirect(role), 500);
+    } catch(e){
+      loading(false);
+      toast('❌ ' + translateError(e.code));
+    }
+  }
+
+  async function forgotPassword(){
+    const email = prompt('Ingresa tu correo para recuperar contraseña:');
+    if(!email) return;
+    if(!validEmail(email)) return toast('Correo inválido');
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast('📧 Te enviamos un correo de recuperación');
+    } catch(e){
+      toast('❌ ' + translateError(e.code));
+    }
+  }
+
+  /* --------------------------------------------------------
+     ✅ REDIRECCIÓN SEGÚN ROL — CAMBIO APLICADO
+     index.html → app.html
+     -------------------------------------------------------- */
+  function finishRedirect(role){
+    if(role === 'vendor'){
+      // ✅ CAMBIO: index.html → app.html
+      window.location.href = 'app.html?view=vendor';
+    } else {
+      // ✅ CAMBIO: index.html → app.html
+      window.location.href = 'app.html';
+    }
+  }
+
+  function init(){
+    console.log('✅ AuthUI init');
+    $('btnGoogleWelcome').onclick = googleAuth;
+    $('btnEmailWelcome').onclick = ()=> showScreen('role');
+    $('btnGoLogin').onclick = ()=> showScreen('login');
+
+    document.querySelectorAll('.role-card').forEach(c=>{
+      c.onclick = ()=> selectRole(c.dataset.role);
+    });
+
+    $('btnContinueRole').onclick = ()=>{
+      if(!selectedRole) return;
+      if(window._pendingGoogle){
+        $('regName').value = window._pendingGoogle.name;
+        $('regEmail').value = window._pendingGoogle.email;
+        $('regEmail').readOnly = true;
+        const pwdGroup = $('regPwdGroup');
+        if(pwdGroup) pwdGroup.style.display = 'none';
+      } else {
+        const pwdGroup = $('regPwdGroup');
+        if(pwdGroup) pwdGroup.style.display = '';
+        $('regEmail').readOnly = false;
+      }
+      if(selectedRole === 'vendor'){
+        $('registerTitle').textContent = 'Registro de vendedor';
+        $('registerDesc').textContent = 'Completa los datos de tu negocio';
+        show($('vendorExtraFields'));
+      } else {
+        $('registerTitle').textContent = 'Crear cuenta de cliente';
+        $('registerDesc').textContent = 'Completa tus datos para comenzar';
+        hide($('vendorExtraFields'));
+      }
+      showScreen('register');
+    };
+
+    $('regPassword').addEventListener('input', e=> updateStrength(e.target.value));
+    $('btnRegister').onclick = doRegister;
+    $('btnGoogleRegister').onclick = googleAuth;
+
+    $('btnLogin').onclick = doLogin;
+    $('btnGoogleLogin').onclick = googleAuth;
+    $('forgotPwd').onclick = forgotPassword;
+    $('goRegister').onclick = ()=>{
+      showScreen('role');
+      selectedRole = null;
+      document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));
+      $('btnContinueRole').disabled = true;
+    };
+
+    document.querySelectorAll('[data-close-auth]').forEach(btn=>{
+      btn.onclick = ()=>{
+        window._pendingUid = null;
+        window._pendingGoogle = null;
+        showScreen('welcome');
+      };
+    });
+
+    document.addEventListener('keydown', e=>{
+      if(e.key !== 'Enter') return;
+      if(!$('loginScreen').classList.contains('hidden')) doLogin();
+      else if(!$('registerScreen').classList.contains('hidden')) doRegister();
+    });
+
+    // Si ya hay sesión activa, redirigir
+    onAuthStateChanged(auth, async user => {
+      if(!user) return;
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if(snap.exists()){
+          const data = snap.data();
+          finishRedirect(data.role || 'customer');
+        }
+      } catch(e){ console.warn(e); }
+    });
+  }
+
+  return { init };
 })();
 
-/* ============================================================
-   CARRUSEL
-   ============================================================ */
-let _carouselTimer = null;
-let _carouselIdx = 0;
-let _touchStartX = 0;
+document.addEventListener('DOMContentLoaded', AuthUI.init);
+</script>
 
-function initCarousel(){
-  clearInterval(_carouselTimer);
-  const track = document.getElementById('carouselTrack');
-  if(!track) return;
-  const slides = track.querySelectorAll('.promo-slide');
-  if(slides.length <= 1) return;
-  _carouselIdx = 0;
-  track.style.transform = 'translateX(0)';
-  const total = slides.length;
-  const dots = document.querySelectorAll('.promo-dot');
-  function render(){
-    track.style.transform = `translateX(-${_carouselIdx * 100}%)`;
-    dots.forEach((d,i)=>d.classList.toggle('active', i === _carouselIdx));
-  }
-  window.goToSlide = (i)=>{ _carouselIdx = i; render(); restart(); };
-  function next(){ _carouselIdx = (_carouselIdx + 1) % total; render(); }
-  function restart(){ clearInterval(_carouselTimer); _carouselTimer = setInterval(next, 4000); }
-  if(!track._carouselBound){
-    track.addEventListener('touchstart', e=>{ _touchStartX = e.touches[0].clientX; }, {passive:true});
-    track.addEventListener('touchend', e=>{
-      const dx = e.changedTouches[0].clientX - _touchStartX;
-      if(Math.abs(dx) < 40) return;
-      const t = track.querySelectorAll('.promo-slide').length;
-      if(t <= 1) return;
-      if(dx < 0) _carouselIdx = (_carouselIdx + 1) % t;
-      else _carouselIdx = (_carouselIdx - 1 + t) % t;
-      render(); restart();
-    }, {passive:true});
-    track.addEventListener('mouseenter', ()=> clearInterval(_carouselTimer));
-    track.addEventListener('mouseleave', restart);
-    track._carouselBound = true;
-  }
-  restart();
-}
-
-/* ============================================================
-   ROUTER GLOBAL
-   ============================================================ */
-document.addEventListener('click', async e=>{
-  const t = e.target;
-
-  if(t.hasAttribute('data-close-modal')){ App.closeModal(); return; }
-
-  const actBtn = t.closest('[data-action]');
-  if(actBtn){
-    const a = actBtn.dataset.action;
-    if(a === 'admin-pending') Admin.openPendingBusinesses();
-    else if(a === 'admin-promos') Promos.openList();
-    else if(a === 'admin-coupons') Coupons.openAdminList();
-    else if(a === 'admin-cat') Admin.openCategoryForm();
-    else if(a === 'admin-biz') Admin.openAllBusinesses();
-    else if(a === 'admin-feat') Admin.openFeatured();
-    else if(a === 'admin-seed') Admin.seedDatabase();
-    else if(a === 'push-notif') Notifications.requestPermission();
-    return;
-  }
-
-  const ddec = t.closest('[data-ddec]');
-  if(ddec){
-    const val = document.getElementById('detailQtyVal');
-    const p = DB.get('products').find(x=>x.id===ddec.dataset.ddec);
-    const q = Math.max(1, +val.textContent - 1);
-    val.textContent = q;
-    const btn = document.getElementById('addFromDetail');
-    if(btn && p) btn.innerHTML = `🛒 Agregar ${money(p.price * q)}`;
-    return;
-  }
-  const dinc = t.closest('[data-dinc]');
-  if(dinc){
-    const val = document.getElementById('detailQtyVal');
-    const p = DB.get('products').find(x=>x.id===dinc.dataset.dinc);
-    const q = +val.textContent + 1;
-    val.textContent = q;
-    const btn = document.getElementById('addFromDetail');
-    if(btn && p) btn.innerHTML = `🛒 Agregar ${money(p.price * q)}`;
-    return;
-  }
-
-  const addMany = t.closest('[data-add-many]');
-  if(addMany){
-    const p = DB.get('products').find(x=>x.id===addMany.dataset.addMany);
-    const q = +document.getElementById('detailQtyVal').textContent || 1;
-    if(p){ Cart.add(p, q); App.closeModal(); App.render(); }
-    return;
-  }
-
-  const addBtn = t.closest('[data-add]');
-  if(addBtn){
-    const p = DB.get('products').find(x=>x.id===addBtn.dataset.add);
-    if(p){ Cart.add(p); App.render(); }
-    return;
-  }
-
-  const incBtn = t.closest('[data-inc]');
-  if(incBtn){ Cart.inc(incBtn.dataset.inc); App.render(); return; }
-  const decBtn = t.closest('[data-dec]');
-  if(decBtn){ Cart.dec(decBtn.dataset.dec); App.render(); return; }
-
-  const openProd = t.closest('[data-open-product]');
-  if(openProd){ Views.productDetail(openProd.dataset.openProduct); return; }
-
-  const navBtn = t.closest('[data-nav]');
-  if(navBtn){ App.navigate(navBtn.dataset.nav); return; }
-
-  const catBtn = t.closest('[data-cat]');
-  if(catBtn){ App.navigate('category', {stack:[catBtn.dataset.cat]}); return; }
-
-  const dot = t.closest('[data-dot]');
-  if(dot){ if(typeof window.goToSlide === 'function') window.goToSlide(+dot.dataset.dot); return; }
-
-  const bizBtn = t.closest('[data-biz]');
-  if(bizBtn){ App.navigate('business', {stack:[bizBtn.dataset.biz]}); return; }
-
-  if(t.closest('[data-back]')){ App.navigate('home'); return; }
-
-  const favBiz = t.closest('[data-fav-biz]');
-  if(favBiz){ Auth.toggleFav('businesses', favBiz.dataset.favBiz); App.render(); return; }
-
-  const revBiz = t.closest('[data-review-biz]');
-  if(revBiz){ Reviews.openForm(revBiz.dataset.reviewBiz); return; }
-
-  const ptab = t.closest('[data-ptab]');
-  if(ptab){
-    document.querySelectorAll('[data-ptab]').forEach(x=>x.classList.remove('active'));
-    ptab.classList.add('active');
-    const bizId = App.state.stack[0];
-    const products = DB.get('products').filter(p=>p.businessId===bizId && p.active && p.category===ptab.dataset.ptab);
-    document.getElementById('prodList').innerHTML = Views.renderProducts(products);
-    return;
-  }
-
-  const sortBtn = t.closest('[data-sort]');
-  if(sortBtn){ App.state.filters.categorySort = sortBtn.dataset.sort; App.render(); return; }
-
-  const cancelOrder = t.closest('[data-cancel-order]');
-  if(cancelOrder){
-    const id = cancelOrder.dataset.cancelOrder;
-    App.openModal(`
-      <h3>❌ ¿Cancelar pedido?</h3>
-      <p>Esta acción no se puede deshacer.</p>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" data-close-modal>No</button>
-        <button class="btn btn-danger" id="confirmCancelOrder">Sí, cancelar</button>
-      </div>
-    `);
-    document.getElementById('confirmCancelOrder').onclick = async ()=>{
-      await Orders.updateStatus(id, 'cancelled');
-      await DB.loadAll();
-      App.closeModal();
-      App.toast('❌ Pedido cancelado');
-      App.render();
-    };
-    return;
-  }
-
-  const revOrder = t.closest('[data-review-order]');
-  if(revOrder){
-    const o = DB.get('orders').find(x => x.id === revOrder.dataset.reviewOrder);
-    if(o) Reviews.openForm(o.businessId);
-    return;
-  }
-
-  const reorder = t.closest('[data-reorder]');
-  if(reorder){
-    const o = DB.get('orders').find(x => x.id === reorder.dataset.reorder);
-    if(!o) return;
-    Cart.clear();
-    const c = { businessId:o.businessId, items:[], coupon:null };
-    o.items.forEach(i => c.items.push({...i}));
-    localStorage.setItem('mercadito_cart_v2', JSON.stringify(c));
-    Cart.updateBadge();
-    App.navigate('cart');
-    App.toast('🛒 Pedido cargado');
-    return;
-  }
-
-  const editPromo = t.closest('[data-edit-promo]');
-  if(editPromo){ Promos.openForm(editPromo.dataset.editPromo); return; }
-  const editCoupon = t.closest('[data-edit-coupon]');
-  if(editCoupon){ Coupons.openForm(editCoupon.dataset.editCoupon); return; }
-
-  const statusBtn = t.closest('[data-order-status]');
-  if(statusBtn){
-    const id = statusBtn.dataset.orderStatus;
-    const newStatus = statusBtn.dataset.newStatus;
-    const updated = await Orders.updateStatus(id, newStatus);
-    if(updated){
-      const msg = {
-        preparing:'👨‍🍳 Preparando',
-        onway:'🚚 En camino',
-        delivered:'✅ Entregado',
-        cancelled:'❌ Cancelado'
-      }[newStatus] || 'Actualizado';
-      Notifications.add({ title:`Pedido #${updated.number}`, body:msg, icon:'📦' });
-      await DB.loadAll();
-      App.toast(msg);
-      App.render();
-    }
-    return;
-  }
-
-  const rmOrder = t.closest('[data-remove-order]');
-  if(rmOrder){
-    await DB.remove('orders', rmOrder.dataset.removeOrder);
-    await DB.loadAll();
-    App.toast('🗑️ Eliminado');
-    App.render();
-    return;
-  }
-
-  const waOrder = t.closest('[data-wa-order]');
-  if(waOrder){
-    const o = DB.get('orders').find(x => x.id === waOrder.dataset.waOrder);
-    if(!o) return;
-    const msg = `Hola${o.customer?.name ? ' ' + o.customer.name : ''}, sobre tu pedido #${o.number} en ${o.businessName}...`;
-    const phone = (o.customer?.phone || '').replace(/\D/g,'');
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-    return;
-  }
-
-  const approve = t.closest('[data-approve-biz]');
-  if(approve){ Admin.approveBiz(approve.dataset.approveBiz); return; }
-  const reject = t.closest('[data-reject-biz]');
-  if(reject){ Admin.rejectBiz(reject.dataset.rejectBiz); return; }
-  const suspend = t.closest('[data-suspend-biz]');
-  if(suspend){ Admin.suspendBiz(suspend.dataset.suspendBiz); return; }
-  const reactivate = t.closest('[data-reactivate-biz]');
-  if(reactivate){ Admin.reactivateBiz(reactivate.dataset.reactivateBiz); return; }
-  const viewBiz = t.closest('[data-view-biz]');
-  if(viewBiz){ App.navigate('business', {stack:[viewBiz.dataset.viewBiz]}); return; }
-
-  const feat = t.closest('[data-feat]');
-  if(feat){
-    const b = DB.get('businesses').find(x => x.id === feat.dataset.feat);
-    if(b){
-      await DB.update('businesses', b.id, { featured: !b.featured });
-      await DB.loadAll();
-      App.toast(!b.featured ? '⭐ Destacado' : '☆ Removido');
-      Admin.openFeatured();
-    }
-    return;
-  }
-
-  if(t.id === 'saveBizImages'){
-    const v = Vendors.current();
-    if(!v) return;
-    App.showLoading();
-    try {
-      let imageUrl = v.image || '';
-      let coverUrl = v.coverImage || '';
-      if(ImageUtils.hasNewImage('vLogoEdit')){
-        imageUrl = await ImageUtils.uploadToStorage(ImageUtils.getPendingBlob('vLogoEdit'), `businesses/${v.ownerId}/logo_${Date.now()}.webp`);
-      }
-      if(ImageUtils.hasNewImage('vCoverEdit')){
-        coverUrl = await ImageUtils.uploadToStorage(ImageUtils.getPendingBlob('vCoverEdit'), `businesses/${v.ownerId}/cover_${Date.now()}.webp`);
-      }
-      await DB.update('businesses', v.id, { image: imageUrl, coverImage: coverUrl });
-      await DB.loadAll();
-      App.toast('✅ Imágenes guardadas');
-      App.render();
-    } catch(e){ App.toast('❌ ' + e.message); }
-    finally { App.hideLoading(); }
-    return;
-  }
-
-  if(t.id === 'changeZoneBtn'){ document.getElementById('locationBtn').click(); return; }
-
-  if(t.id === 'checkoutBtn'){ WhatsApp.checkout(); return; }
-
-  if(t.id === 'clearCart'){
-    App.openModal(`
-      <h3>🗑️ ¿Vaciar carrito?</h3>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" data-close-modal>Cancelar</button>
-        <button class="btn btn-danger" id="confirmClearCart">Sí</button>
-      </div>
-    `);
-    document.getElementById('confirmClearCart').onclick = ()=>{
-      Cart.clear(); App.closeModal(); App.render(); App.toast('🛒 Vaciado');
-    };
-    return;
-  }
-
-  if(t.id === 'applyCoupon'){
-    const inp = document.getElementById('couponInput');
-    const code = inp ? inp.value.trim() : '';
-    if(!code) return App.toast('Ingresa un código');
-    if(Cart.applyCoupon(code)) App.render();
-    return;
-  }
-  if(t.id === 'rmCoupon'){ Cart.removeCoupon(); App.render(); App.toast('🎟️ Removido'); return; }
-
-  if(t.id === 'logoutBtn'){ Auth.logout(); return; }
-
-  if(t.id === 'regVendorBtn'){ Vendors.openRegister(); return; }
-  if(t.id === 'reapplyVendor'){ Vendors.openRegister(); return; }
-  if(t.id === 'toggleOpen'){ Vendors.toggleOpen(); return; }
-  if(t.id === 'addProductBtn'){ Products.openForm(); return; }
-
-  const editProd = t.closest('[data-edit-product]');
-  if(editProd){ Products.openForm(editProd.dataset.editProduct); return; }
-
-  const vcat = t.closest('[data-vcat]');
-  if(vcat){
-    const v = Vendors.current();
-    if(!v) return;
-    const id = vcat.dataset.vcat;
-    let cats = [...v.categories];
-    if(cats.includes(id)){
-      if(cats.length === 1) return App.toast('Debes tener al menos una');
-      cats = cats.filter(c=>c!==id);
-    } else cats.push(id);
-    await DB.update('businesses', v.id, { categories: cats });
-    await DB.loadAll();
-    App.render();
-    return;
-  }
-
-  if(t.hasAttribute('data-confirm-switch')){
-    const pid = t.dataset.pid;
-    const q = +t.dataset.qty || 1;
-    Cart.clear();
-    App.closeModal();
-    if(pid){
-      const p = DB.get('products').find(x=>x.id===pid);
-      if(p) Cart.add(p, q);
-    }
-    App.render();
-    return;
+<script>
+window.addEventListener('error', e => {
+  console.error('🔴 Error:', e.error || e.message);
+  const t = document.getElementById('toast');
+  if(t){
+    t.textContent = '❌ Error: ' + (e.error?.message || e.message);
+    t.classList.remove('hidden');
   }
 });
-
-document.addEventListener('change', e=>{
-  if(e.target.id === 'vendorZone') Vendors.changeZone(e.target.value);
-});
-
-window.addEventListener('DOMContentLoaded', ()=>{
-  App.init();
-  Notifications.updateBadge();
+window.addEventListener('unhandledrejection', e => {
+  console.error('🔴 Promise rechazada:', e.reason);
+  const t = document.getElementById('toast');
+  if(t){
+    t.textContent = '❌ ' + (e.reason?.message || e.reason);
+    t.classList.remove('hidden');
+  }
 });
 </script>
 </body>
