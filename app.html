@@ -663,6 +663,7 @@ const Auth = (() => {
             };
             saveLocal(currentProfile);
 
+            // ✅ FALLBACK: solo si NO se creó el negocio desde index.html
             if(currentProfile.role === 'vendor' && data.business && !data.businessCreated){
               await autoCreateBusiness(user.uid, data.business, currentProfile);
             }
@@ -687,6 +688,8 @@ const Auth = (() => {
     });
   }
 
+  // ✅ Fallback: solo se ejecuta si el negocio NO se creó desde index.html
+  //    (registros viejos). Ahora usa los datos reales del wizard.
   async function autoCreateBusiness(uid, biz, profile){
     try {
       const snap = await getDocs(query(collection(db, 'businesses'), where('ownerId','==', uid)));
@@ -723,10 +726,10 @@ const Auth = (() => {
         name: biz.name,
         whatsapp: biz.whatsapp,
         address: biz.address,
-        colony: 'Fraccionamiento Río Medio 3',
+        colony: biz.colony || 'Fraccionamiento Río Medio 3',
         description: 'Negocio pendiente de completar información.',
         schedule: '10:00 - 22:00',
-        deliveryFrom: 25,
+        deliveryFrom: biz.deliveryFrom || 25,
         categories: [cat.id],
         city: 'Veracruz',
         image: '',
@@ -742,7 +745,11 @@ const Auth = (() => {
         popular: false,
         new: true,
         offer: false,
-        delivery: { home:true, pickup:true, freeFrom: 300 },
+        delivery: {
+          home: true,
+          pickup: true,
+          freeFrom: biz.freeFrom || 0
+        },
         status: 'pending',
         rejectionReason: null,
         approvedAt: null,
@@ -753,7 +760,7 @@ const Auth = (() => {
 
       await addDoc(collection(db, 'businesses'), bizData);
       await setDoc(doc(db, 'users', uid), { businessCreated: true }, { merge: true });
-      console.log('✅ Negocio creado automáticamente:', biz.name);
+      console.log('✅ Negocio creado (fallback):', biz.name);
     } catch(e){
       console.error('autoCreateBusiness error:', e);
     }
@@ -1176,13 +1183,11 @@ const BizValidation = (() => {
     if(!data.name || data.name.trim().length < 3) errors.name = 'Mínimo 3 caracteres';
     if(!data.whatsapp || !/^\d{10,15}$/.test(String(data.whatsapp).replace(/\D/g,''))) errors.whatsapp = 'Debe tener 10-15 dígitos';
     if(!data.address || data.address.trim().length < 5) errors.address = 'Dirección muy corta';
-    // ✅ MODIFICACIÓN 1: Zona obligatoria
     if(!data.colony || data.colony.trim() === '') errors.colony = 'Debes elegir una zona';
     else if(!ZONE_NAMES.includes(data.colony)) errors.colony = 'Zona no válida';
     if(!data.description || data.description.trim().length < 15) errors.description = 'Mínimo 15 caracteres';
     if(!data.categories || !data.categories.length) errors.categories = 'Selecciona al menos una';
     if(!data.schedule || !/^\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}$/.test(data.schedule)) errors.schedule = 'Formato HH:MM - HH:MM';
-    // ✅ MODIFICACIÓN 2: Validación de rango en costo de envío
     const del = Number(data.deliveryFrom);
     if(isNaN(del) || del < 0 || del > 500) errors.deliveryFrom = 'Entre $0 y $500';
     return { valid: Object.keys(errors).length === 0, errors };
@@ -1227,144 +1232,12 @@ const Vendors = (() => {
     App.render();
   }
 
+  // ⚠️ Este formulario ya no se usa para registrar (el registro está en index.html),
+  //    pero se mantiene por si el usuario quiere re-enviar desde el panel.
   function openRegister(){
-    const p = Auth.profile();
-    if(!p) return Auth.openLogin(()=> openRegister());
-    const cats = DB.get('categories');
-    if(!cats.length) return App.toast('⚠️ No hay categorías. Contacta al admin.');
-
-    App.openModal(`
-      <h3>🏪 Registro de vendedor</h3>
-      <p>Completa los requisitos. Un administrador revisará tu solicitud.</p>
-
-      ${ImageUtils.uploadBox('vLogoBox', '🖼️ Logo del negocio *')}
-      ${ImageUtils.uploadBox('vCoverBox', '🎨 Portada (opcional)')}
-
-      <div class="form-group" id="vr-owner"><label>Nombre del propietario *</label><input id="vOwner" value="${esc(p.name||'')}" /><div class="err"></div></div>
-      <div class="form-group" id="vr-name"><label>Nombre del negocio *</label><input id="vName" /><div class="err"></div></div>
-      <div class="form-group" id="vr-whatsapp"><label>WhatsApp (con LADA, 10-15 dígitos) *</label><input id="vWa" type="tel" value="${esc(p.phone||'')}" placeholder="5215551234567" /><div class="err"></div></div>
-      <div class="form-group" id="vr-address"><label>Dirección *</label><input id="vAddr" placeholder="Calle, número, colonia" /><div class="err"></div></div>
-
-      <!-- ✅ MODIFICACIÓN 3: Zona con aviso de permanente + opción vacía -->
-      <div class="form-group" id="vr-colony">
-        <label>📍 Fraccionamiento *
-          <small style="color:#dc2626;font-weight:400">(no modificable después)</small>
-        </label>
-        <select id="vColony">
-          <option value="">— Selecciona tu zona —</option>
-          ${ZONE_NAMES.map(z => `<option>${esc(z)}</option>`).join('')}
-        </select>
-        <div class="hint" style="background:#fff8e1;padding:8px 10px;border-radius:8px;color:#78350f;font-size:11px;margin-top:6px">
-          ⚠️ Esta será tu zona <strong>permanente</strong>. Tus clientes solo te verán si están en la misma zona. Si necesitas cambiarla después, contacta al administrador.
-        </div>
-        <div class="err"></div>
-      </div>
-
-      <div class="form-group" id="vr-categories">
-        <label>Categoría principal *</label>
-        <select id="vCat">${cats.map(c=>`<option value="${esc(c.id)}">${esc(c.emoji)} ${esc(c.name)}</option>`).join('')}</select>
-        <label style="margin-top:8px">Categorías adicionales</label>
-        <div class="chip-select" id="extraCats">
-          ${cats.map(c=>`<button type="button" class="chip" data-xcat="${esc(c.id)}">${esc(c.emoji)} ${esc(c.name)}</button>`).join('')}
-        </div>
-        <div class="err"></div>
-      </div>
-      <div class="form-group" id="vr-description"><label>Descripción * (mín. 15 caracteres)</label><textarea id="vDesc" rows="3" placeholder="Ej: Las mejores hamburguesas al carbón de la zona..."></textarea><div class="err"></div></div>
-      <div class="form-group" id="vr-schedule"><label>Horario de atención * (HH:MM - HH:MM)</label><input id="vSchedule" value="10:00 - 22:00" placeholder="10:00 - 22:00" /><div class="err"></div></div>
-      <div class="form-group" id="vr-deliveryFrom"><label>Costo de envío base *</label><input id="vDel" type="number" min="0" max="500" value="25" /><div class="hint">Lo que cobras por defecto a domicilio</div><div class="err"></div></div>
-      <div class="form-group"><label>Envío gratis desde ($, opcional)</label><input id="vFree" type="number" min="0" value="300" /><div class="hint">Deja en 0 si nunca ofreces envío gratis</div></div>
-      <div class="form-group"><label>Emoji (si no subes logo)</label><input id="vLogo" value="🍔" /></div>
-
-      <div style="background:#fff8e1;border-left:4px solid #f59e0b;padding:12px;border-radius:10px;margin-bottom:12px;font-size:12px;color:#78350f">
-        ⚠️ <strong>Requisitos obligatorios:</strong> logo, nombre, propietario, WhatsApp válido, dirección, zona, categorías, descripción, horario y costo de envío. Al enviar, tu negocio quedará <strong>pendiente de aprobación</strong>.
-      </div>
-
-      <div class="modal-actions">
-        <button class="btn btn-ghost" data-close-modal>Cancelar</button>
-        <button class="btn btn-primary" id="saveVendor">📤 Enviar solicitud</button>
-      </div>
-    `);
-
-    ImageUtils.setup('vLogoBox');
-    ImageUtils.setup('vCoverBox');
-
-    let extras = [];
-    document.querySelectorAll('[data-xcat]').forEach(b => b.onclick = ()=>{
-      const id = b.dataset.xcat;
-      b.classList.toggle('active');
-      extras = b.classList.contains('active') ? [...extras, id] : extras.filter(x=>x!==id);
-    });
-
-    document.getElementById('saveVendor').onclick = async ()=>{
-      const p = Auth.profile();
-      if(!p) return App.toast('Inicia sesión');
-
-      const data = {
-        owner: document.getElementById('vOwner').value.trim(),
-        name: document.getElementById('vName').value.trim(),
-        whatsapp: document.getElementById('vWa').value.replace(/\D/g,''),
-        address: document.getElementById('vAddr').value.trim(),
-        colony: document.getElementById('vColony').value,
-        description: document.getElementById('vDesc').value.trim(),
-        schedule: document.getElementById('vSchedule').value.trim(),
-        deliveryFrom: +document.getElementById('vDel').value,
-        categories: [document.getElementById('vCat').value, ...extras]
-      };
-
-      BizValidation.clearErrors('vr-');
-      const { valid, errors } = BizValidation.validate(data);
-      if(!valid){ BizValidation.renderErrors(errors, 'vr-'); return App.toast('❌ Revisa los campos'); }
-      if(!ImageUtils.hasNewImage('vLogoBox')) return App.toast('❌ El logo es obligatorio');
-
-      App.showLoading();
-      try {
-        const logoBlob = ImageUtils.getPendingBlob('vLogoBox');
-        const logoUrl = await ImageUtils.uploadToStorage(logoBlob, `businesses/${p.uid}/logo_${Date.now()}.webp`);
-        let coverUrl = '';
-        if(ImageUtils.hasNewImage('vCoverBox')){
-          const coverBlob = ImageUtils.getPendingBlob('vCoverBox');
-          coverUrl = await ImageUtils.uploadToStorage(coverBlob, `businesses/${p.uid}/cover_${Date.now()}.webp`);
-        }
-
-        const biz = {
-          ...data,
-          ownerId: p.uid,
-          ownerName: p.name,
-          city: 'Veracruz',
-          image: logoUrl,
-          coverImage: coverUrl,
-          logo: document.getElementById('vLogo').value.trim() || '🏪',
-          cover: document.getElementById('vLogo').value.trim() || '🏪',
-          rating: 0,
-          reviews: 0,
-          timeMin: 20, timeMax: 40,
-          open: false,
-          featured: false, popular: false, new: true, offer: false,
-          delivery: {
-            home: true, pickup: true,
-            freeFrom: +document.getElementById('vFree').value || 0
-          },
-          status: 'pending',
-          rejectionReason: null,
-          approvedAt: null,
-          approvedBy: null
-        };
-
-        await DB.add('businesses', biz);
-        await DB.update('users', p.uid, { role: 'vendor' });
-        Auth.profile().role = 'vendor';
-        await DB.loadAll();
-        App.closeModal();
-        App.toast('📤 Solicitud enviada. Espera aprobación.');
-        Notifications.add({ title:'Solicitud enviada', body:`${biz.name} está en revisión`, icon:'📤' });
-        App.navigate('vendor');
-      } catch(e){
-        App.toast('❌ ' + e.message);
-      } finally { App.hideLoading(); }
-    };
+    window.location.href = 'index.html';
   }
 
-  // ✅ MODIFICACIÓN 4: changeZone solo admin
   async function changeZone(newZone){
     if(!Auth.isAdmin()) {
       return App.toast('🔒 La zona no se puede cambiar. Contacta al administrador.');
@@ -1381,7 +1254,6 @@ const Vendors = (() => {
     App.render();
   }
 
-  // ✅ MODIFICACIÓN 5: Guardar costos de envío (editables)
   async function saveDeliveryCosts(){
     const v = current();
     if(!v) return;
@@ -1768,9 +1640,9 @@ const Admin = (() => {
           <div style="flex:1;min-width:0">
             <div style="font-weight:700;font-size:14px">${esc(b.name)}</div>
             <div style="font-size:12px;color:#6b7280;margin-top:2px">
-              👤 ${esc(b.owner)} · 📱 ${esc(b.whatsapp)}<br>
+              👤 ${esc(b.owner || b.ownerName)} · 📱 ${esc(b.whatsapp)}<br>
               📍 ${esc(b.address)}, ${esc(b.colony)}<br>
-              🕐 ${esc(b.schedule)} · 🚚 ${money(b.deliveryFrom)}
+              🕐 ${esc(b.schedule || '10:00 - 22:00')} · 🚚 ${money(b.deliveryFrom)}
             </div>
             <div style="font-size:12px;color:#374151;margin-top:6px;font-style:italic">"${esc(b.description)}"</div>
             <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
@@ -1810,7 +1682,7 @@ const Admin = (() => {
     if(!b) return;
     App.openModal(`
       <h3>❌ Rechazar negocio</h3>
-      <p>${esc(b.name)} — ${esc(b.owner)}</p>
+      <p>${esc(b.name)} — ${esc(b.owner || b.ownerName)}</p>
       <div class="form-group">
         <label>Motivo del rechazo *</label>
         <textarea id="rejectReason" rows="3" placeholder="Ej: Falta información de contacto, logo no válido..."></textarea>
@@ -2419,11 +2291,11 @@ const Views = (() => {
             <div style="background:#fff;border-radius:12px;padding:16px;text-align:left;margin-top:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
               <div style="font-size:12px;color:#6b7280;text-transform:uppercase;font-weight:700;margin-bottom:8px">Resumen</div>
               <div style="font-size:13px;line-height:1.8">
-                👤 ${esc(v.owner)}<br>
+                👤 ${esc(v.owner || v.ownerName)}<br>
                 📱 ${esc(v.whatsapp)}<br>
                 📍 ${esc(v.address)}<br>
                 🏠 ${esc(v.colony)}<br>
-                🕐 ${esc(v.schedule)}<br>
+                🕐 ${esc(v.schedule || '10:00 - 22:00')}<br>
                 🚚 ${money(v.deliveryFrom)}
               </div>
             </div>
@@ -2519,7 +2391,7 @@ const Views = (() => {
         </button>
       </section>
 
-      <!-- ✅ MODIFICACIÓN 6: Zona bloqueada -->
+      <!-- ✅ Zona bloqueada -->
       <section class="section">
         <div class="section-head"><h2>📍 Mi zona</h2></div>
         <div class="zone-locked">
@@ -2536,7 +2408,25 @@ const Views = (() => {
         </div>
       </section>
 
-      <!-- ✅ MODIFICACIÓN 7: Costos de envío editables -->
+      <!-- ✅ NUEVO: Editar información del negocio -->
+      <section class="section">
+        <div class="section-head">
+          <h2>📝 Información del negocio</h2>
+          <button id="editBizInfoBtn" style="color:#ff4d2e;font-weight:600">✏️ Editar</button>
+        </div>
+        <div style="background:#fff;border-radius:14px;padding:16px;box-shadow:var(--shadow-sm)">
+          <div style="font-size:13px;line-height:2">
+            <div><strong>Nombre:</strong> ${esc(v.name)}</div>
+            <div><strong>Propietario:</strong> ${esc(v.owner || v.ownerName)}</div>
+            <div><strong>WhatsApp:</strong> ${esc(v.whatsapp)}</div>
+            <div><strong>Dirección:</strong> ${esc(v.address)}</div>
+            <div><strong>Horario:</strong> ${esc(v.schedule || '10:00 - 22:00')}</div>
+            <div><strong>Descripción:</strong> ${esc(v.description)}</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ✅ Costos de envío editables -->
       <section class="section">
         <div class="section-head"><h2>🚚 Costos de envío</h2></div>
         <div style="background:#fff;border-radius:14px;padding:16px;box-shadow:var(--shadow-sm)">
@@ -2977,16 +2867,61 @@ document.addEventListener('click', async e=>{
 
   if(t.hasAttribute('data-close-modal')){ App.closeModal(); return; }
 
-  // ✅ MODIFICACIÓN 8: Handler del botón "Solicitar cambio de zona"
+  // Handler del botón "Solicitar cambio de zona"
   if(t.id === 'requestZoneChange'){
     const v = Vendors.current();
     if(!v) return;
-    const msg = `Hola, soy ${v.owner} del negocio "${v.name}". Actualmente estoy en la zona "${v.colony}" y me gustaría cambiarme a otra zona. ¿Es posible?`;
+    const msg = `Hola, soy ${v.owner || v.ownerName} del negocio "${v.name}". Actualmente estoy en la zona "${v.colony}" y me gustaría cambiarme a otra zona. ¿Es posible?`;
     window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
     return;
   }
 
-  // ✅ MODIFICACIÓN 9: Handler del botón "Guardar costos de envío"
+  // ✅ NUEVO: Editar información del negocio
+  if(t.id === 'editBizInfoBtn'){
+    const v = Vendors.current();
+    if(!v) return;
+    App.openModal(`
+      <h3>✏️ Editar información</h3>
+      <div class="form-group"><label>Nombre del negocio</label><input id="edName" value="${esc(v.name)}" /></div>
+      <div class="form-group"><label>Propietario</label><input id="edOwner" value="${esc(v.owner || v.ownerName || '')}" /></div>
+      <div class="form-group"><label>WhatsApp</label><input id="edWa" value="${esc(v.whatsapp)}" /></div>
+      <div class="form-group"><label>Dirección</label><input id="edAddr" value="${esc(v.address)}" /></div>
+      <div class="form-group"><label>Horario (HH:MM - HH:MM)</label><input id="edSch" value="${esc(v.schedule || '10:00 - 22:00')}" /></div>
+      <div class="form-group"><label>Descripción</label><textarea id="edDesc" rows="3">${esc(v.description)}</textarea></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" data-close-modal>Cancelar</button>
+        <button class="btn btn-primary" id="saveBizInfo">Guardar</button>
+      </div>
+    `);
+    document.getElementById('saveBizInfo').onclick = async ()=>{
+      const name = document.getElementById('edName').value.trim();
+      const owner = document.getElementById('edOwner').value.trim();
+      const wa = document.getElementById('edWa').value.replace(/\D/g,'');
+      const addr = document.getElementById('edAddr').value.trim();
+      const sch = document.getElementById('edSch').value.trim();
+      const desc = document.getElementById('edDesc').value.trim();
+      if(name.length < 3) return App.toast('❌ Nombre muy corto');
+      if(owner.length < 3) return App.toast('❌ Propietario muy corto');
+      if(!/^\d{10,15}$/.test(wa)) return App.toast('❌ WhatsApp inválido');
+      if(addr.length < 5) return App.toast('❌ Dirección muy corta');
+      if(!/^\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}$/.test(sch)) return App.toast('❌ Horario inválido (HH:MM - HH:MM)');
+      if(desc.length < 15) return App.toast('❌ Descripción muy corta (mín. 15)');
+      App.showLoading();
+      try {
+        await DB.update('businesses', v.id, {
+          name, owner, ownerName: owner, whatsapp: wa, address: addr, schedule: sch, description: desc
+        });
+        await DB.loadAll();
+        App.closeModal();
+        App.toast('✅ Información actualizada');
+        App.render();
+      } catch(e){ App.toast('❌ ' + e.message); }
+      finally { App.hideLoading(); }
+    };
+    return;
+  }
+
+  // Handler del botón "Guardar costos de envío"
   if(t.id === 'saveDeliveryCosts'){
     Vendors.saveDeliveryCosts();
     return;
@@ -3242,8 +3177,10 @@ document.addEventListener('click', async e=>{
 
   if(t.id === 'logoutBtn'){ Auth.logout(); return; }
 
-  if(t.id === 'regVendorBtn'){ Vendors.openRegister(); return; }
-  if(t.id === 'reapplyVendor'){ Vendors.openRegister(); return; }
+  // ✅ Cambio: redirigir a index en lugar de abrir formulario inline
+  if(t.id === 'regVendorBtn'){ window.location.href = 'index.html'; return; }
+  if(t.id === 'reapplyVendor'){ window.location.href = 'index.html'; return; }
+
   if(t.id === 'toggleOpen'){ Vendors.toggleOpen(); return; }
   if(t.id === 'addProductBtn'){ Products.openForm(); return; }
 
@@ -3279,8 +3216,6 @@ document.addEventListener('click', async e=>{
     return;
   }
 });
-
-// ✅ MODIFICACIÓN 10: Eliminado el listener que permitía cambiar zona con select
 
 window.addEventListener('DOMContentLoaded', ()=>{
   App.init();

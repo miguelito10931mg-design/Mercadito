@@ -620,7 +620,7 @@ import {
   onAuthStateChanged, updateProfile, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, serverTimestamp
+  getFirestore, doc, getDoc, setDoc, serverTimestamp, collection
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const fbApp = initializeApp(firebaseConfig);
@@ -757,32 +757,26 @@ const AuthUI = (() => {
   const STEP_HEADERS = ['Registro de vendedor', 'Tu negocio', 'Ubicación', 'Costos de envío'];
 
   function renderWizardStep(){
-    // Ocultar todos los pasos
     for(let i = 1; i <= WIZARD_TOTAL; i++){
       hide($('wizardStep' + i));
     }
-    // Mostrar paso actual
     show($('wizardStep' + wizardStep));
 
-    // Actualizar barra de progreso
     document.querySelectorAll('#wizardProgress .dot').forEach(dot=>{
       const n = +dot.dataset.step;
       dot.classList.toggle('active', n === wizardStep);
       dot.classList.toggle('done', n < wizardStep);
     });
 
-    // Actualizar texto
     $('wizardStepInfo').textContent = `Paso ${wizardStep} de ${WIZARD_TOTAL} · ${STEP_TITLES[wizardStep - 1]}`;
     $('wizardHeaderTitle').textContent = STEP_HEADERS[wizardStep - 1];
 
-    // Botón atrás
     if(wizardStep === 1){
       hide($('wzPrev'));
     } else {
       show($('wzPrev'));
     }
 
-    // Botón siguiente / crear cuenta
     const nextBtn = $('wzNext');
     if(wizardStep === WIZARD_TOTAL){
       nextBtn.textContent = '✅ Crear cuenta';
@@ -845,7 +839,6 @@ const AuthUI = (() => {
       wizardStep--;
       renderWizardStep();
     } else {
-      // Volver a pantalla de rol
       showScreen('role');
     }
   }
@@ -860,6 +853,85 @@ const AuthUI = (() => {
       $('wzEmail').readOnly = false;
       show($('wzPwdGroup'));
     }
+  }
+
+  /* ═══════════════════════════════════════════════════════════ */
+  /* ✅ NUEVO: CREAR NEGOCIO EN FIRESTORE AL REGISTRAR VENDEDOR */
+  /* ═══════════════════════════════════════════════════════════ */
+  async function createBusinessForVendor(uid, name, businessData){
+    const catMap = {
+      hamburguesas:{emoji:'🍔', name:'Hamburguesas'},
+      tacos:{emoji:'🌮', name:'Tacos'},
+      pizzas:{emoji:'🍕', name:'Pizzas'},
+      pollo:{emoji:'🍗', name:'Pollo'},
+      sushi:{emoji:'🍣', name:'Sushi'},
+      bebidas:{emoji:'🥤', name:'Bebidas'},
+      postres:{emoji:'🍰', name:'Postres'},
+      cafeterias:{emoji:'☕', name:'Cafeterías'},
+      carnes:{emoji:'🥩', name:'Carnes'},
+      mexicana:{emoji:'🌯', name:'Comida mexicana'},
+      rapida:{emoji:'🍟', name:'Comida rápida'},
+      abarrotes:{emoji:'🛒', name:'Abarrotes'},
+      farmacias:{emoji:'💊', name:'Farmacias'},
+      otros:{emoji:'🌸', name:'Otros'}
+    };
+    const cat = catMap[businessData.category] || catMap.otros;
+
+    // Crear el documento del negocio con estado "pending"
+    const bizRef = doc(collection(db, 'businesses'));
+    const bizId = bizRef.id;
+
+    await setDoc(bizRef, {
+      ownerId: uid,
+      ownerName: name,
+      name: businessData.name,
+      whatsapp: businessData.whatsapp,
+      address: businessData.address,
+      colony: businessData.colony,               // ✅ ZONA ELEGIDA EN EL WIZARD
+      description: 'Negocio pendiente de completar información.',
+      schedule: '10:00 - 22:00',
+      deliveryFrom: businessData.deliveryFrom,   // ✅ COSTO BASE DEL WIZARD
+      categories: [businessData.category],
+      city: 'Veracruz',
+      image: '',
+      coverImage: '',
+      logo: cat.emoji,
+      cover: cat.emoji,
+      rating: 0,
+      reviews: 0,
+      timeMin: 20,
+      timeMax: 40,
+      open: false,
+      featured: false,
+      popular: false,
+      new: true,
+      offer: false,
+      delivery: {
+        home: true,
+        pickup: true,
+        freeFrom: businessData.freeFrom || 0     // ✅ ENVÍO GRATIS DEL WIZARD
+      },
+      status: 'pending',                          // ✅ PENDIENTE DE APROBACIÓN
+      rejectionReason: null,
+      approvedAt: null,
+      approvedBy: null,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+
+    // Crear la categoría si no existe en la colección "categories"
+    try {
+      const catRef = doc(db, 'categories', businessData.category);
+      const catSnap = await getDoc(catRef);
+      if(!catSnap.exists()){
+        await setDoc(catRef, {
+          name: cat.name,
+          emoji: cat.emoji
+        });
+      }
+    } catch(e){ console.warn('No se pudo crear categoría:', e); }
+
+    return bizId;
   }
 
   async function doRegisterVendor(){
@@ -894,10 +966,16 @@ const AuthUI = (() => {
         try { await updateProfile(cred.user, { displayName: name }); } catch(e){}
       }
 
+      // 1️⃣ Crear el negocio en Firestore con estado "pending"
+      await createBusinessForVendor(uid, name, businessData);
+
+      // 2️⃣ Guardar el perfil del usuario con businessCreated: true
+      //    para que app.html NO lo vuelva a crear
       const payload = {
         name, email, phone,
         role: 'vendor',
         business: businessData,
+        businessCreated: true,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
@@ -906,8 +984,8 @@ const AuthUI = (() => {
       window._pendingUid = null;
       window._pendingGoogle = null;
 
-      toast(`¡Bienvenido, ${name.split(' ')[0]}! 👋`);
-      setTimeout(()=> finishRedirect('vendor'), 600);
+      toast(`¡Bienvenido, ${name.split(' ')[0]}! Solicitud enviada al admin.`);
+      setTimeout(()=> finishRedirect('vendor'), 900);
     } catch(e){
       loading(false);
       toast('❌ ' + translateError(e.code));
@@ -1035,13 +1113,11 @@ const AuthUI = (() => {
       if(!selectedRole) return;
 
       if(selectedRole === 'vendor'){
-        // 🧙 WIZARD PARA VENDEDOR
         wizardStep = 1;
         fillWizardFromGoogle();
         renderWizardStep();
         showScreen('wizard');
       } else {
-        // CLIENTE: 1 solo paso
         if(window._pendingGoogle){
           $('regName').value = window._pendingGoogle.name;
           $('regEmail').value = window._pendingGoogle.email;
@@ -1057,20 +1133,16 @@ const AuthUI = (() => {
       }
     };
 
-    // Botones del wizard
     $('wzNext').onclick = wizardNext;
     $('wzPrev').onclick = wizardPrev;
     $('wizardBack').onclick = wizardPrev;
 
-    // Fortaleza contraseña
     $('regPassword').addEventListener('input', e=> updateStrength(e.target.value, 'pwdStrength'));
     $('wzPassword').addEventListener('input', e=> updateStrength(e.target.value, 'wzPwdStrength'));
 
-    // Registro cliente
     $('btnRegister').onclick = doRegisterCustomer;
     $('btnGoogleRegister').onclick = googleAuth;
 
-    // Login
     $('btnLogin').onclick = doLogin;
     $('btnGoogleLogin').onclick = googleAuth;
     $('forgotPwd').onclick = forgotPassword;
