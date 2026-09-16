@@ -893,7 +893,7 @@ const Cart = (() => {
     if(!biz) return App.toast('❌ Negocio no encontrado');
     if(biz.status !== 'approved') return App.toast('⏸️ Negocio no disponible');
     if(!biz.open) return App.toast('🔴 Cerrado');
-    if(biz.colony !== App.state.location.colony) return App.toast('📍 Fuera de tu zona');
+    // ✅ Sin restricción de zona: puedes comprar a cualquier negocio
 
     const maxStock = Number.isFinite(product.stock) ? product.stock : Infinity;
     const currentQty = qty(product.id);
@@ -1148,7 +1148,7 @@ const Products = (() => {
         let imageUrl = p?.image || '';
         if(ImageUtils.hasNewImage('pImgBox')){
           const blob = ImageUtils.getPendingBlob('pImgBox');
-          // ✅ CORREGIDO: usar uid del usuario autenticado (coincide con las reglas de Storage)
+          // ✅ Usar uid del usuario autenticado
           const uid = Auth.profile()?.uid || v.ownerId;
           imageUrl = await ImageUtils.uploadToStorage(blob, `products/${uid}/${Date.now()}.webp`);
         }
@@ -1428,9 +1428,9 @@ const WhatsApp = (() => {
 
     App.openModal(`
       <h3>📋 Confirmar pedido</h3>
-      <p>Pedido a <strong>${esc(b.name)}</strong></p>
+      <p>Pedido a <strong>${esc(b.name)}</strong> · 📍 ${esc(b.colony)}</p>
       <div class="form-group"><label>📍 Dirección *</label><input id="oAddr" placeholder="Calle, número" /><div class="err" style="color:#dc2626;font-size:11px"></div></div>
-      <div class="form-group"><label>🏠 Fraccionamiento</label><input id="oColony" value="${esc(App.state.location.colony)}" readonly style="background:#f1f3f6" /></div>
+      <div class="form-group"><label>🏠 Fraccionamiento de entrega</label><input id="oColony" value="${esc(App.state.location.colony)}" readonly style="background:#f1f3f6" /></div>
       <div class="form-group"><label>📝 Referencia</label><input id="oRef" placeholder="Casa azul, portón negro..." /></div>
       <div class="form-group"><label>💳 Pago</label>
         <select id="oPay"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option></select>
@@ -1851,6 +1851,7 @@ const Admin = (() => {
 const Views = (() => {
 
   function businessesInZone(){
+    // ✅ Filtra por la zona que el usuario tenga seleccionada actualmente
     const colony = App.state.location.colony;
     return DB.get('businesses').filter(b => b.status === 'approved' && b.colony === colony);
   }
@@ -2573,6 +2574,7 @@ const Categories = (() => {
     }
   }
   function search(q){
+    // ✅ Filtra por la zona seleccionada
     const colony = App.state.location.colony;
     const businesses = DB.get('businesses').filter(b =>
       b.status === 'approved' && b.colony === colony &&
@@ -2796,7 +2798,7 @@ const App = (() => {
     const current = state.location.colony;
     openModal(`
       <h3>📍 Selecciona tu fraccionamiento</h3>
-      <p>Los negocios mostrados dependerán de la zona elegida.</p>
+      <p>Verás los negocios de esta zona. Podrás cambiarla cuando quieras.</p>
       <div class="form-group">
         <label>Zona</label>
         <select id="colonySel">${ZONE_NAMES.map(z => `<option ${z===current?'selected':''}>${esc(z)}</option>`).join('')}</select>
@@ -2809,14 +2811,7 @@ const App = (() => {
     document.getElementById('saveLoc').onclick = ()=>{
       state.location = { city:'Veracruz', colony: document.getElementById('colonySel').value };
       document.getElementById('locationText').textContent = state.location.colony;
-      const cartBiz = Cart.businessId();
-      if(cartBiz){
-        const b = DB.get('businesses').find(x=>x.id===cartBiz);
-        if(b && b.colony !== state.location.colony){
-          Cart.clear();
-          toast('🛒 Carrito vaciado por cambio de zona');
-        }
-      }
+      // ✅ El carrito NO se vacía al cambiar de zona
       closeModal();
       render();
       toast('📍 Ubicación actualizada');
@@ -3146,7 +3141,7 @@ document.addEventListener('click', async e=>{
     try {
       let imageUrl = v.image || '';
       let coverUrl = v.coverImage || '';
-      // ✅ CORREGIDO: usar uid del usuario autenticado
+      // ✅ Usar uid del usuario autenticado
       const uid = Auth.profile()?.uid || v.ownerId;
       if(ImageUtils.hasNewImage('vLogoEdit')){
         imageUrl = await ImageUtils.uploadToStorage(ImageUtils.getPendingBlob('vLogoEdit'), `businesses/${uid}/logo_${Date.now()}.webp`);
