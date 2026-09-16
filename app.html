@@ -767,6 +767,11 @@ const Auth = (() => {
   }
 
   async function logout(){
+    // ✅ Limpiar carrito del usuario que se va (antes de borrar el perfil)
+    const uid = currentProfile?.uid;
+    if(uid){
+      try { localStorage.removeItem(`mercadito_cart_v3_${uid}`); } catch(e){}
+    }
     try { await signOut(auth); } catch(e){}
     localStorage.removeItem(KEY_USER);
     currentProfile = null;
@@ -864,15 +869,20 @@ const Notifications = (() => {
    CARRITO
    ============================================================ */
 const Cart = (() => {
-  const KEY = 'mercadito_cart_v2';
+  const BASE_KEY = 'mercadito_cart_v3';
+  // ✅ Clave única por usuario (UID). Si no hay sesión, usa "guest"
+  function key(){
+    const uid = Auth.profile()?.uid || 'guest';
+    return `${BASE_KEY}_${uid}`;
+  }
   function load(){
     try {
-      const c = JSON.parse(localStorage.getItem(KEY) || '{"businessId":null,"items":[],"coupon":null}');
+      const c = JSON.parse(localStorage.getItem(key()) || '{"businessId":null,"items":[],"coupon":null}');
       if(!('coupon' in c)) c.coupon = null;
       return c;
     } catch { return { businessId:null, items:[], coupon:null }; }
   }
-  function save(c){ localStorage.setItem(KEY, JSON.stringify(c)); updateBadge(); }
+  function save(c){ localStorage.setItem(key(), JSON.stringify(c)); updateBadge(); }
   function items(){ return load().items; }
   function businessId(){ return load().businessId; }
   function qty(id){ const it = items().find(x=>x.id===id); return it ? it.qty : 0; }
@@ -3053,7 +3063,9 @@ document.addEventListener('click', async e=>{
     Cart.clear();
     const c = { businessId:o.businessId, items:[], coupon:null };
     o.items.forEach(i => c.items.push({...i}));
-    localStorage.setItem('mercadito_cart_v2', JSON.stringify(c));
+    // ✅ Guardar en la clave del usuario actual
+    const uid = Auth.profile()?.uid || 'guest';
+    localStorage.setItem(`mercadito_cart_v3_${uid}`, JSON.stringify(c));
     Cart.updateBadge();
     App.navigate('cart');
     App.toast('🛒 Pedido cargado');
