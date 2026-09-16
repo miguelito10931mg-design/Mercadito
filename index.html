@@ -193,26 +193,70 @@ input,textarea,select{font-family:inherit;font-size:16px;}
 .pwd-strength.medium span:nth-child(-n+2){background:#f59e0b;}
 .pwd-strength.strong span{background:#16a34a;}
 
-/* 🎯 Estilos nuevos para el bloque de envío */
-.delivery-block{
-  background:#fff8e1;
-  border:2px solid #fcd34d;
+/* ═══════════════════════════════════════ */
+/* WIZARD MULTIPASO                        */
+/* ═══════════════════════════════════════ */
+.wizard-progress{
+  display:flex;gap:6px;
+  margin:0 0 8px;
+}
+.wizard-progress .dot{
+  flex:1;height:5px;border-radius:3px;
+  background:#eceef1;
+  transition:background .3s;
+}
+.wizard-progress .dot.active{background:var(--primary);}
+.wizard-progress .dot.done{background:var(--primary);}
+
+.wizard-step-info{
+  text-align:center;
+  font-size:12px;
+  color:var(--text-soft);
+  font-weight:600;
+  margin-bottom:20px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+
+.wizard-step{animation:wizardIn .3s ease;}
+@keyframes wizardIn{
+  from{opacity:0;transform:translateX(20px);}
+  to{opacity:1;transform:translateX(0);}
+}
+
+.wizard-nav{
+  display:flex;gap:10px;
+  margin-top:24px;
+}
+.wizard-nav .btn{flex:1;}
+
+.wizard-block{
+  background:#fafbfc;
+  border-left:4px solid var(--primary);
   border-radius:14px;
   padding:14px;
   margin-bottom:14px;
 }
-.delivery-block .delivery-title{
+.wizard-block .block-title{
   font-weight:800;
   font-size:13px;
-  color:#78350f;
+  color:var(--primary);
   margin-bottom:10px;
   text-transform:uppercase;
   letter-spacing:.5px;
 }
-.delivery-block .form-group label{color:#78350f;}
-.delivery-block .form-group input{background:#fff;border-color:#fcd34d;}
-.delivery-block .hint{color:#78350f;}
 
+.colony-block{
+  background:#eff6ff;
+  border:2px solid #93c5fd;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:14px;
+}
+.colony-block .block-title{
+  font-weight:800;font-size:13px;color:#1e40af;
+  margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;
+}
 .colony-block .form-group label{color:#1e40af;}
 .colony-block .form-group select{background:#fff;border-color:#93c5fd;}
 .colony-warning{
@@ -225,6 +269,21 @@ input,textarea,select{font-family:inherit;font-size:16px;}
   display:block;
   line-height:1.4;
 }
+
+.delivery-block{
+  background:#fff8e1;
+  border:2px solid #fcd34d;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:14px;
+}
+.delivery-block .block-title{
+  font-weight:800;font-size:13px;color:#78350f;
+  margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;
+}
+.delivery-block .form-group label{color:#78350f;}
+.delivery-block .form-group input{background:#fff;border-color:#fcd34d;}
+.delivery-block .hint{color:#78350f;}
 </style>
 </head>
 <body>
@@ -293,7 +352,7 @@ input,textarea,select{font-family:inherit;font-size:16px;}
   </div>
 </div>
 
-<!-- PANTALLA 3: REGISTRO -->
+<!-- PANTALLA 3: REGISTRO CLIENTE (1 solo paso) -->
 <div id="registerScreen" class="auth-screen hidden">
   <div class="auth-header">
     <button class="auth-back" data-close-auth>←</button>
@@ -325,88 +384,6 @@ input,textarea,select{font-family:inherit;font-size:16px;}
       <span class="hint">Usa mayúsculas, números y símbolos para mayor seguridad</span>
     </div>
 
-    <!-- 🎯 BLOQUE DE VENDEDOR CON NUEVOS CAMPOS -->
-    <div id="vendorExtraFields" class="hidden">
-
-      <!-- Datos del negocio -->
-      <div style="background:#fafbfc;border-left:4px solid var(--primary);border-radius:14px;padding:14px;margin-bottom:14px">
-        <div style="font-weight:800;font-size:13px;color:var(--primary);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">
-          📋 Datos del negocio
-        </div>
-
-        <div class="form-group">
-          <label>Nombre del negocio</label>
-          <input type="text" id="regBizName" placeholder="Ej: Burger House" />
-        </div>
-        <div class="form-group">
-          <label>WhatsApp del negocio (con LADA 52)</label>
-          <input type="tel" id="regWhatsapp" placeholder="5215551234567" />
-        </div>
-        <div class="form-group">
-          <label>Categoría principal</label>
-          <select id="regCategory">
-            <option value="hamburguesas">🍔 Hamburguesas</option>
-            <option value="tacos">🌮 Tacos</option>
-            <option value="pizzas">🍕 Pizzas</option>
-            <option value="pollo">🍗 Pollo</option>
-            <option value="sushi">🍣 Sushi</option>
-            <option value="bebidas">🥤 Bebidas</option>
-            <option value="postres">🍰 Postres</option>
-            <option value="cafeterias">☕ Cafeterías</option>
-            <option value="carnes">🥩 Carnes</option>
-            <option value="mexicana">🌯 Comida mexicana</option>
-            <option value="rapida">🍟 Comida rápida</option>
-            <option value="abarrotes">🛒 Abarrotes</option>
-            <option value="farmacias">💊 Farmacias</option>
-            <option value="otros">🌸 Otros</option>
-          </select>
-        </div>
-        <div class="form-group" style="margin-bottom:0">
-          <label>Dirección del negocio</label>
-          <input type="text" id="regBizAddress" placeholder="Calle, número, colonia" />
-        </div>
-      </div>
-
-      <!-- Ubicación (destacado azul) -->
-      <div class="colony-block" style="background:#eff6ff;border:2px solid #93c5fd;border-radius:14px;padding:14px;margin-bottom:14px">
-        <div style="font-weight:800;font-size:13px;color:#1e40af;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">
-          📍 Ubicación
-        </div>
-
-        <div class="form-group" style="margin-bottom:0">
-          <label>Fraccionamiento (no modificable después)</label>
-          <select id="regColony">
-            <option value="">— Selecciona tu zona —</option>
-            <option value="Fraccionamiento Río Medio 3">Fraccionamiento Río Medio 3</option>
-            <option value="Torrentes">Torrentes</option>
-            <option value="Bosques de Río Medio 4">Bosques de Río Medio 4</option>
-          </select>
-          <span class="colony-warning">
-            ⚠️ Esta será tu zona <strong>permanente</strong>. Tus clientes solo te verán si están en la misma zona.
-          </span>
-        </div>
-      </div>
-
-      <!-- Costos de envío (destacado amarillo) -->
-      <div class="delivery-block">
-        <div class="delivery-title">
-          🚚 Costos de envío
-        </div>
-
-        <div class="form-group">
-          <label>Costo de envío base *</label>
-          <input type="number" id="regDeliveryFrom" min="0" max="500" value="25" />
-          <span class="hint">Lo que cobras por defecto a domicilio</span>
-        </div>
-        <div class="form-group" style="margin-bottom:0">
-          <label>Envío gratis a partir de ($)</label>
-          <input type="number" id="regFreeFrom" min="0" value="300" />
-          <span class="hint">Deja en 0 si nunca ofreces envío gratis</span>
-        </div>
-      </div>
-
-    </div>
-
     <div class="form-group">
       <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer">
         <input type="checkbox" id="regTerms" style="width:auto;" />
@@ -430,7 +407,153 @@ input,textarea,select{font-family:inherit;font-size:16px;}
   </div>
 </div>
 
-<!-- PANTALLA 4: LOGIN -->
+<!-- PANTALLA 4: WIZARD VENDEDOR (4 pasos) -->
+<div id="wizardScreen" class="auth-screen hidden">
+  <div class="auth-header">
+    <button class="auth-back" id="wizardBack">←</button>
+    <h2 id="wizardHeaderTitle">Registro de vendedor</h2>
+  </div>
+  <div class="auth-body">
+
+    <!-- Barra de progreso -->
+    <div class="wizard-progress" id="wizardProgress">
+      <div class="dot active" data-step="1"></div>
+      <div class="dot" data-step="2"></div>
+      <div class="dot" data-step="3"></div>
+      <div class="dot" data-step="4"></div>
+    </div>
+    <div class="wizard-step-info" id="wizardStepInfo">Paso 1 de 4 · Tu cuenta</div>
+
+    <!-- PASO 1: CUENTA -->
+    <div class="wizard-step" id="wizardStep1">
+      <h2 class="auth-title">Tu cuenta</h2>
+      <p class="auth-desc">Estos son tus datos personales</p>
+
+      <div class="form-group">
+        <label>Nombre completo</label>
+        <input type="text" id="wzName" placeholder="Tu nombre" autocomplete="name" />
+      </div>
+
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="wzEmail" placeholder="tucorreo@ejemplo.com" autocomplete="email" />
+      </div>
+
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="tel" id="wzPhone" placeholder="55 1234 5678" autocomplete="tel" />
+      </div>
+
+      <div class="form-group" id="wzPwdGroup">
+        <label>Contraseña</label>
+        <input type="password" id="wzPassword" placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
+        <div class="pwd-strength" id="wzPwdStrength"><span></span><span></span><span></span></div>
+        <span class="hint">Usa mayúsculas, números y símbolos para mayor seguridad</span>
+      </div>
+    </div>
+
+    <!-- PASO 2: NEGOCIO -->
+    <div class="wizard-step hidden" id="wizardStep2">
+      <h2 class="auth-title">Tu negocio</h2>
+      <p class="auth-desc">Cuéntanos sobre tu negocio</p>
+
+      <div class="wizard-block">
+        <div class="block-title">🏪 Datos del negocio</div>
+
+        <div class="form-group">
+          <label>Nombre del negocio</label>
+          <input type="text" id="wzBizName" placeholder="Ej: Burger House" />
+        </div>
+        <div class="form-group">
+          <label>WhatsApp del negocio (con LADA 52)</label>
+          <input type="tel" id="wzWhatsapp" placeholder="5215551234567" />
+        </div>
+        <div class="form-group">
+          <label>Categoría principal</label>
+          <select id="wzCategory">
+            <option value="hamburguesas">🍔 Hamburguesas</option>
+            <option value="tacos">🌮 Tacos</option>
+            <option value="pizzas">🍕 Pizzas</option>
+            <option value="pollo">🍗 Pollo</option>
+            <option value="sushi">🍣 Sushi</option>
+            <option value="bebidas">🥤 Bebidas</option>
+            <option value="postres">🍰 Postres</option>
+            <option value="cafeterias">☕ Cafeterías</option>
+            <option value="carnes">🥩 Carnes</option>
+            <option value="mexicana">🌯 Comida mexicana</option>
+            <option value="rapida">🍟 Comida rápida</option>
+            <option value="abarrotes">🛒 Abarrotes</option>
+            <option value="farmacias">💊 Farmacias</option>
+            <option value="otros">🌸 Otros</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Dirección del negocio</label>
+          <input type="text" id="wzBizAddress" placeholder="Calle, número, colonia" />
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 3: UBICACIÓN -->
+    <div class="wizard-step hidden" id="wizardStep3">
+      <h2 class="auth-title">Ubicación</h2>
+      <p class="auth-desc">¿Dónde estará tu negocio?</p>
+
+      <div class="colony-block">
+        <div class="block-title">📍 Fraccionamiento</div>
+
+        <div class="form-group" style="margin-bottom:0">
+          <label>Zona (no modificable después)</label>
+          <select id="wzColony">
+            <option value="">— Selecciona tu zona —</option>
+            <option value="Fraccionamiento Río Medio 3">Fraccionamiento Río Medio 3</option>
+            <option value="Torrentes">Torrentes</option>
+            <option value="Bosques de Río Medio 4">Bosques de Río Medio 4</option>
+          </select>
+          <span class="colony-warning">
+            ⚠️ Esta será tu zona <strong>permanente</strong>. Tus clientes solo te verán si están en la misma zona.
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 4: ENVÍOS -->
+    <div class="wizard-step hidden" id="wizardStep4">
+      <h2 class="auth-title">Costos de envío</h2>
+      <p class="auth-desc">Define cuánto cobrarás por los envíos</p>
+
+      <div class="delivery-block">
+        <div class="block-title">🚚 Costos de envío</div>
+
+        <div class="form-group">
+          <label>Costo de envío base *</label>
+          <input type="number" id="wzDeliveryFrom" min="0" max="500" value="25" />
+          <span class="hint">Lo que cobras por defecto a domicilio</span>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Envío gratis a partir de ($)</label>
+          <input type="number" id="wzFreeFrom" min="0" value="300" />
+          <span class="hint">Deja en 0 si nunca ofreces envío gratis</span>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:16px">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer">
+          <input type="checkbox" id="wzTerms" style="width:auto;" />
+          Acepto los términos y condiciones
+        </label>
+      </div>
+    </div>
+
+    <!-- Botones de navegación -->
+    <div class="wizard-nav">
+      <button class="btn btn-ghost hidden" id="wzPrev">← Atrás</button>
+      <button class="btn btn-primary" id="wzNext">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<!-- PANTALLA 5: LOGIN -->
 <div id="loginScreen" class="auth-screen hidden">
   <div class="auth-header">
     <button class="auth-back" data-close-auth>←</button>
@@ -510,8 +633,8 @@ const googleProvider = new GoogleAuthProvider();
    ============================================================ */
 const AuthUI = (() => {
   function $(id){ return document.getElementById(id); }
-  function show(el){ el.classList.remove('hidden'); }
-  function hide(el){ el.classList.add('hidden'); }
+  function show(el){ if(el) el.classList.remove('hidden'); }
+  function hide(el){ if(el) el.classList.add('hidden'); }
   function toast(msg, ms = 2400){
     const t = $('toast');
     t.textContent = msg;
@@ -535,8 +658,8 @@ const AuthUI = (() => {
   function validEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
   function validPhone(p){ return /^[\d\s\+\-\(\)]{8,}$/.test(p); }
 
-  function updateStrength(pwd){
-    const el = $('pwdStrength');
+  function updateStrength(pwd, elId){
+    const el = $(elId);
     if(!el) return;
     el.className = 'pwd-strength';
     if(!pwd) return;
@@ -571,7 +694,7 @@ const AuthUI = (() => {
   }
 
   function showScreen(name){
-    ['welcomeScreen','roleScreen','registerScreen','loginScreen'].forEach(id=>{
+    ['welcomeScreen','roleScreen','registerScreen','wizardScreen','loginScreen'].forEach(id=>{
       const el = $(id);
       if(el) el.classList.add('hidden');
     });
@@ -579,6 +702,7 @@ const AuthUI = (() => {
       welcome:'welcomeScreen',
       role:'roleScreen',
       register:'registerScreen',
+      wizard:'wizardScreen',
       login:'loginScreen'
     }[name]);
     if(target) show(target);
@@ -624,49 +748,136 @@ const AuthUI = (() => {
     }
   }
 
-  async function doRegister(){
-    const name = $('regName').value.trim();
-    const email = $('regEmail').value.trim().toLowerCase();
-    const phone = $('regPhone').value.trim();
-    const password = $('regPassword').value;
-    const terms = $('regTerms').checked;
+  /* ═══════════════════════════════════════ */
+  /* WIZARD VENDEDOR                          */
+  /* ═══════════════════════════════════════ */
+  let wizardStep = 1;
+  const WIZARD_TOTAL = 4;
+  const STEP_TITLES = ['Tu cuenta', 'Tu negocio', 'Ubicación', 'Costos de envío'];
+  const STEP_HEADERS = ['Registro de vendedor', 'Tu negocio', 'Ubicación', 'Costos de envío'];
+
+  function renderWizardStep(){
+    // Ocultar todos los pasos
+    for(let i = 1; i <= WIZARD_TOTAL; i++){
+      hide($('wizardStep' + i));
+    }
+    // Mostrar paso actual
+    show($('wizardStep' + wizardStep));
+
+    // Actualizar barra de progreso
+    document.querySelectorAll('#wizardProgress .dot').forEach(dot=>{
+      const n = +dot.dataset.step;
+      dot.classList.toggle('active', n === wizardStep);
+      dot.classList.toggle('done', n < wizardStep);
+    });
+
+    // Actualizar texto
+    $('wizardStepInfo').textContent = `Paso ${wizardStep} de ${WIZARD_TOTAL} · ${STEP_TITLES[wizardStep - 1]}`;
+    $('wizardHeaderTitle').textContent = STEP_HEADERS[wizardStep - 1];
+
+    // Botón atrás
+    if(wizardStep === 1){
+      hide($('wzPrev'));
+    } else {
+      show($('wzPrev'));
+    }
+
+    // Botón siguiente / crear cuenta
+    const nextBtn = $('wzNext');
+    if(wizardStep === WIZARD_TOTAL){
+      nextBtn.textContent = '✅ Crear cuenta';
+    } else {
+      nextBtn.textContent = 'Siguiente →';
+    }
+
+    window.scrollTo(0,0);
+  }
+
+  function validateWizardStep(step){
+    if(step === 1){
+      const name = $('wzName').value.trim();
+      const email = $('wzEmail').value.trim().toLowerCase();
+      const phone = $('wzPhone').value.trim();
+      const password = $('wzPassword').value;
+      const isGoogle = !!window._pendingUid;
+      if(!name) return 'Ingresa tu nombre';
+      if(!validEmail(email)) return 'Ingresa un correo válido';
+      if(!validPhone(phone)) return 'Ingresa un teléfono válido';
+      if(!isGoogle && password.length < 6) return 'Contraseña muy corta (mín. 6)';
+    }
+    if(step === 2){
+      const bizName = $('wzBizName').value.trim();
+      const whatsapp = $('wzWhatsapp').value.replace(/\D/g,'');
+      const address = $('wzBizAddress').value.trim();
+      if(!bizName || bizName.length < 3) return 'Nombre del negocio muy corto';
+      if(!/^\d{10,15}$/.test(whatsapp)) return 'WhatsApp inválido (10-15 dígitos)';
+      if(!address || address.length < 5) return 'Dirección muy corta';
+    }
+    if(step === 3){
+      const colony = $('wzColony').value;
+      if(!colony) return '📍 Debes elegir un fraccionamiento';
+    }
+    if(step === 4){
+      const deliveryFrom = +$('wzDeliveryFrom').value;
+      const freeFrom = +$('wzFreeFrom').value || 0;
+      const terms = $('wzTerms').checked;
+      if(isNaN(deliveryFrom) || deliveryFrom < 0 || deliveryFrom > 500) 
+        return '💵 Costo de envío entre $0 y $500';
+      if(freeFrom < 0) return '💵 Envío gratis inválido';
+      if(!terms) return 'Debes aceptar los términos';
+    }
+    return null;
+  }
+
+  function wizardNext(){
+    const err = validateWizardStep(wizardStep);
+    if(err) return toast('❌ ' + err);
+    if(wizardStep < WIZARD_TOTAL){
+      wizardStep++;
+      renderWizardStep();
+    } else {
+      doRegisterVendor();
+    }
+  }
+
+  function wizardPrev(){
+    if(wizardStep > 1){
+      wizardStep--;
+      renderWizardStep();
+    } else {
+      // Volver a pantalla de rol
+      showScreen('role');
+    }
+  }
+
+  function fillWizardFromGoogle(){
+    if(window._pendingGoogle){
+      $('wzName').value = window._pendingGoogle.name;
+      $('wzEmail').value = window._pendingGoogle.email;
+      $('wzEmail').readOnly = true;
+      hide($('wzPwdGroup'));
+    } else {
+      $('wzEmail').readOnly = false;
+      show($('wzPwdGroup'));
+    }
+  }
+
+  async function doRegisterVendor(){
+    const name = $('wzName').value.trim();
+    const email = $('wzEmail').value.trim().toLowerCase();
+    const phone = $('wzPhone').value.trim();
+    const password = $('wzPassword').value;
     const isGoogle = !!window._pendingUid;
 
-    if(!name) return toast('Ingresa tu nombre');
-    if(!validEmail(email)) return toast('Ingresa un correo válido');
-    if(!validPhone(phone)) return toast('Ingresa un teléfono válido');
-    if(!isGoogle && password.length < 6) return toast('La contraseña debe tener al menos 6 caracteres');
-    if(!terms) return toast('Debes aceptar los términos');
-
-    // 🎯 VALIDACIÓN CON NUEVOS CAMPOS
-    let businessData = null;
-    if(selectedRole === 'vendor'){
-      const bizName = $('regBizName').value.trim();
-      const whatsapp = $('regWhatsapp').value.replace(/\D/g,'');
-      const category = $('regCategory').value;
-      const address = $('regBizAddress').value.trim();
-      const colony = $('regColony').value;
-      const deliveryFrom = +$('regDeliveryFrom').value;
-      const freeFrom = +$('regFreeFrom').value || 0;
-
-      if(!bizName || bizName.length < 3) return toast('Nombre del negocio muy corto');
-      if(!/^\d{10,15}$/.test(whatsapp)) return toast('WhatsApp inválido (10-15 dígitos)');
-      if(!address || address.length < 5) return toast('Dirección muy corta');
-      if(!colony) return toast('📍 Debes elegir un fraccionamiento');
-      if(isNaN(deliveryFrom) || deliveryFrom < 0 || deliveryFrom > 500) 
-        return toast('💵 Costo de envío entre $0 y $500');
-      if(freeFrom < 0) return toast('💵 Envío gratis inválido');
-
-      businessData = { 
-        name: bizName, 
-        whatsapp, 
-        category, 
-        address,
-        colony,
-        deliveryFrom,
-        freeFrom
-      };
-    }
+    const businessData = {
+      name: $('wzBizName').value.trim(),
+      whatsapp: $('wzWhatsapp').value.replace(/\D/g,''),
+      category: $('wzCategory').value,
+      address: $('wzBizAddress').value.trim(),
+      colony: $('wzColony').value,
+      deliveryFrom: +$('wzDeliveryFrom').value,
+      freeFrom: +$('wzFreeFrom').value || 0
+    };
 
     loading(true);
     try {
@@ -685,7 +896,7 @@ const AuthUI = (() => {
 
       const payload = {
         name, email, phone,
-        role: selectedRole || 'customer',
+        role: 'vendor',
         business: businessData,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
@@ -696,7 +907,59 @@ const AuthUI = (() => {
       window._pendingGoogle = null;
 
       toast(`¡Bienvenido, ${name.split(' ')[0]}! 👋`);
-      setTimeout(()=> finishRedirect(payload.role), 600);
+      setTimeout(()=> finishRedirect('vendor'), 600);
+    } catch(e){
+      loading(false);
+      toast('❌ ' + translateError(e.code));
+    }
+  }
+
+  /* ═══════════════════════════════════════ */
+  /* REGISTRO CLIENTE (1 paso)                */
+  /* ═══════════════════════════════════════ */
+  async function doRegisterCustomer(){
+    const name = $('regName').value.trim();
+    const email = $('regEmail').value.trim().toLowerCase();
+    const phone = $('regPhone').value.trim();
+    const password = $('regPassword').value;
+    const terms = $('regTerms').checked;
+    const isGoogle = !!window._pendingUid;
+
+    if(!name) return toast('Ingresa tu nombre');
+    if(!validEmail(email)) return toast('Ingresa un correo válido');
+    if(!validPhone(phone)) return toast('Ingresa un teléfono válido');
+    if(!isGoogle && password.length < 6) return toast('La contraseña debe tener al menos 6 caracteres');
+    if(!terms) return toast('Debes aceptar los términos');
+
+    loading(true);
+    try {
+      let uid;
+      if(isGoogle){
+        uid = window._pendingUid;
+        const currentUser = auth.currentUser;
+        if(currentUser && name) {
+          try { await updateProfile(currentUser, { displayName: name }); } catch(e){}
+        }
+      } else {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        uid = cred.user.uid;
+        try { await updateProfile(cred.user, { displayName: name }); } catch(e){}
+      }
+
+      const payload = {
+        name, email, phone,
+        role: 'customer',
+        business: null,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      await setDoc(doc(db, 'users', uid), payload, { merge: true });
+      window._pendingUid = null;
+      window._pendingGoogle = null;
+
+      toast(`¡Bienvenido, ${name.split(' ')[0]}! 👋`);
+      setTimeout(()=> finishRedirect('customer'), 600);
     } catch(e){
       loading(false);
       toast('❌ ' + translateError(e.code));
@@ -759,6 +1022,7 @@ const AuthUI = (() => {
 
   function init(){
     console.log('✅ AuthUI init');
+
     $('btnGoogleWelcome').onclick = googleAuth;
     $('btnEmailWelcome').onclick = ()=> showScreen('role');
     $('btnGoLogin').onclick = ()=> showScreen('login');
@@ -769,33 +1033,44 @@ const AuthUI = (() => {
 
     $('btnContinueRole').onclick = ()=>{
       if(!selectedRole) return;
-      if(window._pendingGoogle){
-        $('regName').value = window._pendingGoogle.name;
-        $('regEmail').value = window._pendingGoogle.email;
-        $('regEmail').readOnly = true;
-        const pwdGroup = $('regPwdGroup');
-        if(pwdGroup) pwdGroup.style.display = 'none';
-      } else {
-        const pwdGroup = $('regPwdGroup');
-        if(pwdGroup) pwdGroup.style.display = '';
-        $('regEmail').readOnly = false;
-      }
+
       if(selectedRole === 'vendor'){
-        $('registerTitle').textContent = 'Registro de vendedor';
-        $('registerDesc').textContent = 'Completa los datos de tu negocio';
-        show($('vendorExtraFields'));
+        // 🧙 WIZARD PARA VENDEDOR
+        wizardStep = 1;
+        fillWizardFromGoogle();
+        renderWizardStep();
+        showScreen('wizard');
       } else {
+        // CLIENTE: 1 solo paso
+        if(window._pendingGoogle){
+          $('regName').value = window._pendingGoogle.name;
+          $('regEmail').value = window._pendingGoogle.email;
+          $('regEmail').readOnly = true;
+          $('regPwdGroup').style.display = 'none';
+        } else {
+          $('regPwdGroup').style.display = '';
+          $('regEmail').readOnly = false;
+        }
         $('registerTitle').textContent = 'Crear cuenta de cliente';
         $('registerDesc').textContent = 'Completa tus datos para comenzar';
-        hide($('vendorExtraFields'));
+        showScreen('register');
       }
-      showScreen('register');
     };
 
-    $('regPassword').addEventListener('input', e=> updateStrength(e.target.value));
-    $('btnRegister').onclick = doRegister;
+    // Botones del wizard
+    $('wzNext').onclick = wizardNext;
+    $('wzPrev').onclick = wizardPrev;
+    $('wizardBack').onclick = wizardPrev;
+
+    // Fortaleza contraseña
+    $('regPassword').addEventListener('input', e=> updateStrength(e.target.value, 'pwdStrength'));
+    $('wzPassword').addEventListener('input', e=> updateStrength(e.target.value, 'wzPwdStrength'));
+
+    // Registro cliente
+    $('btnRegister').onclick = doRegisterCustomer;
     $('btnGoogleRegister').onclick = googleAuth;
 
+    // Login
     $('btnLogin').onclick = doLogin;
     $('btnGoogleLogin').onclick = googleAuth;
     $('forgotPwd').onclick = forgotPassword;
@@ -817,7 +1092,7 @@ const AuthUI = (() => {
     document.addEventListener('keydown', e=>{
       if(e.key !== 'Enter') return;
       if(!$('loginScreen').classList.contains('hidden')) doLogin();
-      else if(!$('registerScreen').classList.contains('hidden')) doRegister();
+      else if(!$('registerScreen').classList.contains('hidden')) doRegisterCustomer();
     });
 
     onAuthStateChanged(auth, async user => {
