@@ -285,6 +285,12 @@ img{max-width:100%;display:block;}
 .loading-overlay{position:fixed;inset:0;z-index:500;background:rgba(255,255,255,.85);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;}
 .loading-overlay .spinner{width:44px;height:44px;border:4px solid #eceef1;border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;}
 
+.zone-locked{background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:14px;padding:16px;}
+.zone-locked .zone-row{display:flex;align-items:center;gap:12px;}
+.zone-locked .zone-icon{font-size:28px;}
+.zone-locked .zone-name{font-weight:700;font-size:15px;}
+.zone-locked .zone-note{font-size:12px;color:var(--text-soft);margin-top:2px;}
+
 @media (min-width:640px){
   .app-main{max-width:720px;margin:0 auto;width:100%;}
   .bottom-nav{max-width:720px;left:50%;transform:translateX(-50%);border-radius:20px 20px 0 0;}
@@ -398,6 +404,9 @@ const ZONES = [
   { id:'bosques-rio-medio-4', name:'Bosques de Río Medio 4' }
 ];
 const ZONE_NAMES = ZONES.map(z => z.name);
+
+// ⚠️⚠️⚠️ IMPORTANTE: REEMPLAZA ESTE NÚMERO CON EL WHATSAPP DEL ADMIN ⚠️⚠️⚠️
+const ADMIN_WHATSAPP = '52XXXXXXXXXX';
 
 const BIZ_STATUS = {
   pending:  { label:'🟡 Pendiente',  cls:'pending_approval' },
@@ -617,7 +626,6 @@ const DB = (() => {
 
 /* ============================================================
    AUTH
-   ✅ CORREGIDO: redirige a index.html (antes bienvenida.html)
    ============================================================ */
 const Auth = (() => {
   const KEY_USER = 'mercadito_profile';
@@ -636,7 +644,6 @@ const Auth = (() => {
         if(!user){
           if(!redirected){
             redirected = true;
-            // ✅ CAMBIO: bienvenida.html → index.html
             window.location.href = 'index.html';
           }
           resolve(null);
@@ -756,12 +763,10 @@ const Auth = (() => {
     try { await signOut(auth); } catch(e){}
     localStorage.removeItem(KEY_USER);
     currentProfile = null;
-    // ✅ CAMBIO: bienvenida.html → index.html
     window.location.href = 'index.html';
   }
 
   function openLogin(cb){
-    // ✅ CAMBIO: bienvenida.html → index.html
     window.location.href = 'index.html';
   }
 
@@ -1171,10 +1176,13 @@ const BizValidation = (() => {
     if(!data.name || data.name.trim().length < 3) errors.name = 'Mínimo 3 caracteres';
     if(!data.whatsapp || !/^\d{10,15}$/.test(String(data.whatsapp).replace(/\D/g,''))) errors.whatsapp = 'Debe tener 10-15 dígitos';
     if(!data.address || data.address.trim().length < 5) errors.address = 'Dirección muy corta';
-    if(!data.colony || !ZONE_NAMES.includes(data.colony)) errors.colony = 'Zona no válida';
+    // ✅ MODIFICACIÓN 1: Zona obligatoria
+    if(!data.colony || data.colony.trim() === '') errors.colony = 'Debes elegir una zona';
+    else if(!ZONE_NAMES.includes(data.colony)) errors.colony = 'Zona no válida';
     if(!data.description || data.description.trim().length < 15) errors.description = 'Mínimo 15 caracteres';
     if(!data.categories || !data.categories.length) errors.categories = 'Selecciona al menos una';
     if(!data.schedule || !/^\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}$/.test(data.schedule)) errors.schedule = 'Formato HH:MM - HH:MM';
+    // ✅ MODIFICACIÓN 2: Validación de rango en costo de envío
     const del = Number(data.deliveryFrom);
     if(isNaN(del) || del < 0 || del > 500) errors.deliveryFrom = 'Entre $0 y $500';
     return { valid: Object.keys(errors).length === 0, errors };
@@ -1236,11 +1244,22 @@ const Vendors = (() => {
       <div class="form-group" id="vr-name"><label>Nombre del negocio *</label><input id="vName" /><div class="err"></div></div>
       <div class="form-group" id="vr-whatsapp"><label>WhatsApp (con LADA, 10-15 dígitos) *</label><input id="vWa" type="tel" value="${esc(p.phone||'')}" placeholder="5215551234567" /><div class="err"></div></div>
       <div class="form-group" id="vr-address"><label>Dirección *</label><input id="vAddr" placeholder="Calle, número, colonia" /><div class="err"></div></div>
+
+      <!-- ✅ MODIFICACIÓN 3: Zona con aviso de permanente + opción vacía -->
       <div class="form-group" id="vr-colony">
-        <label>Fraccionamiento *</label>
-        <select id="vColony">${ZONE_NAMES.map(z => `<option>${esc(z)}</option>`).join('')}</select>
+        <label>📍 Fraccionamiento *
+          <small style="color:#dc2626;font-weight:400">(no modificable después)</small>
+        </label>
+        <select id="vColony">
+          <option value="">— Selecciona tu zona —</option>
+          ${ZONE_NAMES.map(z => `<option>${esc(z)}</option>`).join('')}
+        </select>
+        <div class="hint" style="background:#fff8e1;padding:8px 10px;border-radius:8px;color:#78350f;font-size:11px;margin-top:6px">
+          ⚠️ Esta será tu zona <strong>permanente</strong>. Tus clientes solo te verán si están en la misma zona. Si necesitas cambiarla después, contacta al administrador.
+        </div>
         <div class="err"></div>
       </div>
+
       <div class="form-group" id="vr-categories">
         <label>Categoría principal *</label>
         <select id="vCat">${cats.map(c=>`<option value="${esc(c.id)}">${esc(c.emoji)} ${esc(c.name)}</option>`).join('')}</select>
@@ -1252,8 +1271,8 @@ const Vendors = (() => {
       </div>
       <div class="form-group" id="vr-description"><label>Descripción * (mín. 15 caracteres)</label><textarea id="vDesc" rows="3" placeholder="Ej: Las mejores hamburguesas al carbón de la zona..."></textarea><div class="err"></div></div>
       <div class="form-group" id="vr-schedule"><label>Horario de atención * (HH:MM - HH:MM)</label><input id="vSchedule" value="10:00 - 22:00" placeholder="10:00 - 22:00" /><div class="err"></div></div>
-      <div class="form-group" id="vr-deliveryFrom"><label>Costo de envío base *</label><input id="vDel" type="number" value="25" /><div class="err"></div></div>
-      <div class="form-group"><label>Envío gratis desde ($, opcional)</label><input id="vFree" type="number" value="300" /></div>
+      <div class="form-group" id="vr-deliveryFrom"><label>Costo de envío base *</label><input id="vDel" type="number" min="0" max="500" value="25" /><div class="hint">Lo que cobras por defecto a domicilio</div><div class="err"></div></div>
+      <div class="form-group"><label>Envío gratis desde ($, opcional)</label><input id="vFree" type="number" min="0" value="300" /><div class="hint">Deja en 0 si nunca ofreces envío gratis</div></div>
       <div class="form-group"><label>Emoji (si no subes logo)</label><input id="vLogo" value="🍔" /></div>
 
       <div style="background:#fff8e1;border-left:4px solid #f59e0b;padding:12px;border-radius:10px;margin-bottom:12px;font-size:12px;color:#78350f">
@@ -1345,17 +1364,56 @@ const Vendors = (() => {
     };
   }
 
+  // ✅ MODIFICACIÓN 4: changeZone solo admin
   async function changeZone(newZone){
+    if(!Auth.isAdmin()) {
+      return App.toast('🔒 La zona no se puede cambiar. Contacta al administrador.');
+    }
+    if(!ZONE_NAMES.includes(newZone)) 
+      return App.toast('Zona no válida');
+    
     const v = current();
     if(!v) return;
-    if(!ZONE_NAMES.includes(newZone)) return App.toast('Zona no válida');
+    
     await DB.update('businesses', v.id, { colony: newZone });
     await DB.loadAll();
-    App.toast('📍 Zona actualizada');
+    App.toast('📍 Zona actualizada por admin');
     App.render();
   }
 
-  return { current, toggleOpen, openRegister, changeZone };
+  // ✅ MODIFICACIÓN 5: Guardar costos de envío (editables)
+  async function saveDeliveryCosts(){
+    const v = current();
+    if(!v) return;
+    
+    const newDeliveryFrom = +document.getElementById('editDeliveryFrom').value || 0;
+    const newFreeFrom = +document.getElementById('editFreeFrom').value || 0;
+    
+    if(newDeliveryFrom < 0 || newDeliveryFrom > 500) 
+      return App.toast('❌ Costo entre $0 y $500');
+    if(newFreeFrom < 0) 
+      return App.toast('❌ Valor inválido');
+    
+    App.showLoading();
+    try {
+      await DB.update('businesses', v.id, {
+        deliveryFrom: newDeliveryFrom,
+        delivery: {
+          ...(v.delivery || {}),
+          freeFrom: newFreeFrom
+        }
+      });
+      await DB.loadAll();
+      App.toast('✅ Costos actualizados');
+      App.render();
+    } catch(e) {
+      App.toast('❌ ' + e.message);
+    } finally {
+      App.hideLoading();
+    }
+  }
+
+  return { current, toggleOpen, openRegister, changeZone, saveDeliveryCosts };
 })();
 
 /* ============================================================
@@ -2460,6 +2518,44 @@ const Views = (() => {
           ${v.open ? '🟢 Abierto — Cerrar' : '🔴 Cerrado — Abrir'}
         </button>
       </section>
+
+      <!-- ✅ MODIFICACIÓN 6: Zona bloqueada -->
+      <section class="section">
+        <div class="section-head"><h2>📍 Mi zona</h2></div>
+        <div class="zone-locked">
+          <div class="zone-row">
+            <span class="zone-icon">📍</span>
+            <div style="flex:1">
+              <div class="zone-name">${esc(v.colony)}</div>
+              <div class="zone-note">🔒 Zona fija. Tus clientes solo te ven aquí.</div>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-block" style="margin-top:12px" id="requestZoneChange">
+            📩 Solicitar cambio al administrador
+          </button>
+        </div>
+      </section>
+
+      <!-- ✅ MODIFICACIÓN 7: Costos de envío editables -->
+      <section class="section">
+        <div class="section-head"><h2>🚚 Costos de envío</h2></div>
+        <div style="background:#fff;border-radius:14px;padding:16px;box-shadow:var(--shadow-sm)">
+          <div class="form-group" style="margin-bottom:12px">
+            <label>Costo de envío base</label>
+            <input id="editDeliveryFrom" type="number" min="0" max="500" value="${v.deliveryFrom || 0}" />
+            <div class="hint">Lo que cobras por defecto a domicilio</div>
+          </div>
+          <div class="form-group" style="margin-bottom:12px">
+            <label>Envío gratis a partir de ($)</label>
+            <input id="editFreeFrom" type="number" min="0" value="${v.delivery?.freeFrom || 0}" />
+            <div class="hint">Deja en 0 si nunca ofreces envío gratis</div>
+          </div>
+          <button class="btn btn-primary btn-block" id="saveDeliveryCosts">
+            💾 Guardar costos de envío
+          </button>
+        </div>
+      </section>
+
       <section class="section">
         <div class="section-head">
           <h2>📦 Pedidos entrantes</h2>
@@ -2469,12 +2565,7 @@ const Views = (() => {
       </section>
       ${preparing.length ? `<section class="section"><div class="section-head"><h2>👨‍🍳 En proceso</h2></div>${preparing.map(orderCard).join('')}</section>` : ''}
       ${delivered.length ? `<section class="section"><div class="section-head"><h2>✅ Historial</h2></div>${delivered.slice(0,5).map(orderCard).join('')}</section>` : ''}
-      <section class="section">
-        <div class="section-head"><h2>📍 Zona</h2></div>
-        <select id="vendorZone" style="width:100%;padding:12px;border:1.5px solid #eceef1;border-radius:12px;background:#fafbfc">
-          ${ZONE_NAMES.map(z => `<option ${z===v.colony?'selected':''}>${esc(z)}</option>`).join('')}
-        </select>
-      </section>
+
       <section class="section">
         <div class="section-head"><h2>🎨 Imágenes</h2></div>
         ${ImageUtils.uploadBox('vLogoEdit', '🖼️ Logo', v.image || '')}
@@ -2714,7 +2805,7 @@ const App = (() => {
 
     try {
       const profile = await Auth.init();
-      if(!profile) return; // redirigiendo a index.html
+      if(!profile) return;
 
       await DB.loadAll();
 
@@ -2885,6 +2976,21 @@ document.addEventListener('click', async e=>{
   const t = e.target;
 
   if(t.hasAttribute('data-close-modal')){ App.closeModal(); return; }
+
+  // ✅ MODIFICACIÓN 8: Handler del botón "Solicitar cambio de zona"
+  if(t.id === 'requestZoneChange'){
+    const v = Vendors.current();
+    if(!v) return;
+    const msg = `Hola, soy ${v.owner} del negocio "${v.name}". Actualmente estoy en la zona "${v.colony}" y me gustaría cambiarme a otra zona. ¿Es posible?`;
+    window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+    return;
+  }
+
+  // ✅ MODIFICACIÓN 9: Handler del botón "Guardar costos de envío"
+  if(t.id === 'saveDeliveryCosts'){
+    Vendors.saveDeliveryCosts();
+    return;
+  }
 
   const actBtn = t.closest('[data-action]');
   if(actBtn){
@@ -3174,9 +3280,7 @@ document.addEventListener('click', async e=>{
   }
 });
 
-document.addEventListener('change', e=>{
-  if(e.target.id === 'vendorZone') Vendors.changeZone(e.target.value);
-});
+// ✅ MODIFICACIÓN 10: Eliminado el listener que permitía cambiar zona con select
 
 window.addEventListener('DOMContentLoaded', ()=>{
   App.init();
