@@ -192,6 +192,39 @@ input,textarea,select{font-family:inherit;font-size:16px;}
 .pwd-strength.weak span:nth-child(1){background:#dc2626;}
 .pwd-strength.medium span:nth-child(-n+2){background:#f59e0b;}
 .pwd-strength.strong span{background:#16a34a;}
+
+/* 🎯 Estilos nuevos para el bloque de envío */
+.delivery-block{
+  background:#fff8e1;
+  border:2px solid #fcd34d;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:14px;
+}
+.delivery-block .delivery-title{
+  font-weight:800;
+  font-size:13px;
+  color:#78350f;
+  margin-bottom:10px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+.delivery-block .form-group label{color:#78350f;}
+.delivery-block .form-group input{background:#fff;border-color:#fcd34d;}
+.delivery-block .hint{color:#78350f;}
+
+.colony-block .form-group label{color:#1e40af;}
+.colony-block .form-group select{background:#fff;border-color:#93c5fd;}
+.colony-warning{
+  background:#dbeafe;
+  padding:8px 10px;
+  border-radius:8px;
+  color:#1e40af;
+  font-size:11px;
+  margin-top:6px;
+  display:block;
+  line-height:1.4;
+}
 </style>
 </head>
 <body>
@@ -292,38 +325,86 @@ input,textarea,select{font-family:inherit;font-size:16px;}
       <span class="hint">Usa mayúsculas, números y símbolos para mayor seguridad</span>
     </div>
 
+    <!-- 🎯 BLOQUE DE VENDEDOR CON NUEVOS CAMPOS -->
     <div id="vendorExtraFields" class="hidden">
-      <div class="form-group">
-        <label>Nombre del negocio</label>
-        <input type="text" id="regBizName" placeholder="Ej: Burger House" />
+
+      <!-- Datos del negocio -->
+      <div style="background:#fafbfc;border-left:4px solid var(--primary);border-radius:14px;padding:14px;margin-bottom:14px">
+        <div style="font-weight:800;font-size:13px;color:var(--primary);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">
+          📋 Datos del negocio
+        </div>
+
+        <div class="form-group">
+          <label>Nombre del negocio</label>
+          <input type="text" id="regBizName" placeholder="Ej: Burger House" />
+        </div>
+        <div class="form-group">
+          <label>WhatsApp del negocio (con LADA 52)</label>
+          <input type="tel" id="regWhatsapp" placeholder="5215551234567" />
+        </div>
+        <div class="form-group">
+          <label>Categoría principal</label>
+          <select id="regCategory">
+            <option value="hamburguesas">🍔 Hamburguesas</option>
+            <option value="tacos">🌮 Tacos</option>
+            <option value="pizzas">🍕 Pizzas</option>
+            <option value="pollo">🍗 Pollo</option>
+            <option value="sushi">🍣 Sushi</option>
+            <option value="bebidas">🥤 Bebidas</option>
+            <option value="postres">🍰 Postres</option>
+            <option value="cafeterias">☕ Cafeterías</option>
+            <option value="carnes">🥩 Carnes</option>
+            <option value="mexicana">🌯 Comida mexicana</option>
+            <option value="rapida">🍟 Comida rápida</option>
+            <option value="abarrotes">🛒 Abarrotes</option>
+            <option value="farmacias">💊 Farmacias</option>
+            <option value="otros">🌸 Otros</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Dirección del negocio</label>
+          <input type="text" id="regBizAddress" placeholder="Calle, número, colonia" />
+        </div>
       </div>
-      <div class="form-group">
-        <label>WhatsApp del negocio (con LADA 52)</label>
-        <input type="tel" id="regWhatsapp" placeholder="5215551234567" />
+
+      <!-- Ubicación (destacado azul) -->
+      <div class="colony-block" style="background:#eff6ff;border:2px solid #93c5fd;border-radius:14px;padding:14px;margin-bottom:14px">
+        <div style="font-weight:800;font-size:13px;color:#1e40af;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">
+          📍 Ubicación
+        </div>
+
+        <div class="form-group" style="margin-bottom:0">
+          <label>Fraccionamiento (no modificable después)</label>
+          <select id="regColony">
+            <option value="">— Selecciona tu zona —</option>
+            <option value="Fraccionamiento Río Medio 3">Fraccionamiento Río Medio 3</option>
+            <option value="Torrentes">Torrentes</option>
+            <option value="Bosques de Río Medio 4">Bosques de Río Medio 4</option>
+          </select>
+          <span class="colony-warning">
+            ⚠️ Esta será tu zona <strong>permanente</strong>. Tus clientes solo te verán si están en la misma zona.
+          </span>
+        </div>
       </div>
-      <div class="form-group">
-        <label>Categoría principal</label>
-        <select id="regCategory">
-          <option value="hamburguesas">🍔 Hamburguesas</option>
-          <option value="tacos">🌮 Tacos</option>
-          <option value="pizzas">🍕 Pizzas</option>
-          <option value="pollo">🍗 Pollo</option>
-          <option value="sushi">🍣 Sushi</option>
-          <option value="bebidas">🥤 Bebidas</option>
-          <option value="postres">🍰 Postres</option>
-          <option value="cafeterias">☕ Cafeterías</option>
-          <option value="carnes">🥩 Carnes</option>
-          <option value="mexicana">🌯 Comida mexicana</option>
-          <option value="rapida">🍟 Comida rápida</option>
-          <option value="abarrotes">🛒 Abarrotes</option>
-          <option value="farmacias">💊 Farmacias</option>
-          <option value="otros">🌸 Otros</option>
-        </select>
+
+      <!-- Costos de envío (destacado amarillo) -->
+      <div class="delivery-block">
+        <div class="delivery-title">
+          🚚 Costos de envío
+        </div>
+
+        <div class="form-group">
+          <label>Costo de envío base *</label>
+          <input type="number" id="regDeliveryFrom" min="0" max="500" value="25" />
+          <span class="hint">Lo que cobras por defecto a domicilio</span>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Envío gratis a partir de ($)</label>
+          <input type="number" id="regFreeFrom" min="0" value="300" />
+          <span class="hint">Deja en 0 si nunca ofreces envío gratis</span>
+        </div>
       </div>
-      <div class="form-group">
-        <label>Dirección del negocio</label>
-        <input type="text" id="regBizAddress" placeholder="Calle, número, colonia" />
-      </div>
+
     </div>
 
     <div class="form-group">
@@ -557,16 +638,34 @@ const AuthUI = (() => {
     if(!isGoogle && password.length < 6) return toast('La contraseña debe tener al menos 6 caracteres');
     if(!terms) return toast('Debes aceptar los términos');
 
+    // 🎯 VALIDACIÓN CON NUEVOS CAMPOS
     let businessData = null;
     if(selectedRole === 'vendor'){
       const bizName = $('regBizName').value.trim();
       const whatsapp = $('regWhatsapp').value.replace(/\D/g,'');
       const category = $('regCategory').value;
       const address = $('regBizAddress').value.trim();
+      const colony = $('regColony').value;
+      const deliveryFrom = +$('regDeliveryFrom').value;
+      const freeFrom = +$('regFreeFrom').value || 0;
+
       if(!bizName || bizName.length < 3) return toast('Nombre del negocio muy corto');
       if(!/^\d{10,15}$/.test(whatsapp)) return toast('WhatsApp inválido (10-15 dígitos)');
       if(!address || address.length < 5) return toast('Dirección muy corta');
-      businessData = { name: bizName, whatsapp, category, address };
+      if(!colony) return toast('📍 Debes elegir un fraccionamiento');
+      if(isNaN(deliveryFrom) || deliveryFrom < 0 || deliveryFrom > 500) 
+        return toast('💵 Costo de envío entre $0 y $500');
+      if(freeFrom < 0) return toast('💵 Envío gratis inválido');
+
+      businessData = { 
+        name: bizName, 
+        whatsapp, 
+        category, 
+        address,
+        colony,
+        deliveryFrom,
+        freeFrom
+      };
     }
 
     loading(true);
@@ -650,16 +749,10 @@ const AuthUI = (() => {
     }
   }
 
-  /* --------------------------------------------------------
-     ✅ REDIRECCIÓN SEGÚN ROL — CAMBIO APLICADO
-     index.html → app.html
-     -------------------------------------------------------- */
   function finishRedirect(role){
     if(role === 'vendor'){
-      // ✅ CAMBIO: index.html → app.html
       window.location.href = 'app.html?view=vendor';
     } else {
-      // ✅ CAMBIO: index.html → app.html
       window.location.href = 'app.html';
     }
   }
@@ -727,7 +820,6 @@ const AuthUI = (() => {
       else if(!$('registerScreen').classList.contains('hidden')) doRegister();
     });
 
-    // Si ya hay sesión activa, redirigir
     onAuthStateChanged(auth, async user => {
       if(!user) return;
       try {
