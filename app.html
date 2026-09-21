@@ -408,7 +408,6 @@ const ZONES = [
 ];
 const ZONE_NAMES = ZONES.map(z => z.name);
 
-// ⚠️⚠️⚠️ IMPORTANTE: REEMPLAZA ESTE NÚMERO CON EL WHATSAPP DEL ADMIN ⚠️⚠️⚠️
 const ADMIN_WHATSAPP = '522298584365';
 
 const BIZ_STATUS = {
@@ -614,7 +613,7 @@ const ImageUtils = (() => {
 })();
 
 /* ============================================================
-   DB  (con listeners en tiempo real)
+   DB  (con listeners filtrados por rol)
    ============================================================ */
 const DB = (() => {
   const collections = ['businesses','products','orders','reviews','promos','coupons','categories','users'];
@@ -629,14 +628,13 @@ const DB = (() => {
         const snap = await getDocs(collection(db, c));
         cache[c] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       } catch(e){
-        console.warn('DB load error for', c, e);
+        console.warn('DB load error for', c, e.code || e.message);
         cache[c] = [];
       }
     }));
   }
 
   function seedIfEmpty(){ return Promise.resolve(); }
-
   function get(c){ return cache[c] || []; }
 
   async function add(c, data, id){
@@ -652,33 +650,81 @@ const DB = (() => {
     await deleteDoc(doc(db, c, id));
   }
 
-  // 🔥 Listener en tiempo real de pedidos
-  function subscribeOrders(onChange){
-    if(ordersUnsub) ordersUnsub();
-    ordersUnsub = onSnapshot(collection(db, 'orders'), snap => {
-      cache.orders = snap.docs
-        .map(d => ({ id: d.id, ...d.data() }))
-        .sort((a,b) => {
-          const ta = a.createdAt?.seconds || 0;
-          const tb = b.createdAt?.seconds || 0;
-          return tb - ta;
-        });
-      if(typeof onChange === 'function') onChange(cache.orders);
-    }, err => console.warn('orders snapshot error', err));
+  // 🔥 Listener de pedidos filtrado por rol
+  function subscribeOrdersForUser(uid, bizId, isAdminUser, onChange){
+    if(ordersUnsub) { try { ordersUnsub(); } catch(e){} }
+    ordersUnsub = null;
+
+    let q;
+    if(isAdminUser){
+      q = query(collection(db, 'orders'));
+    } else if(bizId){
+      q = query(collection(db, 'orders'), where('businessId', '==', bizId));
+    } else {
+      q = query(collection(db, 'orders'), where('userId', '==', uid));
+    }
+
+    ordersUnsub = onSnapshot(q,
+      snap => {
+        cache.orders = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .sort((a,b) => {
+            const ta = a.createdAt?.seconds || 0;
+            const tb = b.createdAt?.seconds || 0;
+            return tb - ta;
+          });
+        if(typeof onChange === 'function') onChange(cache.orders);
+      },
+      err => {
+        console.warn('orders snapshot error:', err.code || err.message);
+        setTimeout(() => {
+          if(Auth.profile()) subscribeOrdersForUser(uid, bizId, isAdminUser, onChange);
+        }, 5000);
+      }
+    );
     return () => { if(ordersUnsub) ordersUnsub(); };
   }
 
-  // 🔥 Listener en tiempo real de negocios
-  function subscribeBusinesses(onChange){
-    if(businessesUnsub) businessesUnsub();
-    businessesUnsub = onSnapshot(collection(db, 'businesses'), snap => {
-      cache.businesses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      if(typeof onChange === 'function') onChange(cache.businesses);
-    }, err => console.warn('businesses snapshot error', err));
+  // 🔥 Listener de negocios filtrado por rol
+  function subscribeBusinessesForUser(uid, isAdminUser, onChange){
+    if(businessesUnsub) { try { businessesUnsub(); } catch(e){} }
+    businessesUnsub = null;
+
+    let q;
+    if(isAdminUser){
+      q = query(collection(db, 'businesses'));
+    } else if(Auth.isVendor()){
+      q = query(collection(db, 'businesses'), where('ownerId', '==', uid));
+    } else {
+      q = query(collection(db, 'businesses'), where('status', '==', 'approved'));
+    }
+
+    businessesUnsub = onSnapshot(q,
+      snap => {
+        const nuevos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        if(Auth.isVendor() && !isAdminUser){
+          // Fusionar: no perder otros negocios que ya estaban cacheados
+          const otros = cache.businesses.filter(b => !nuevos.some(n => n.id === b.id));
+          cache.businesses = [...nuevos, ...otros];
+        } else {
+          cache.businesses = nuevos;
+        }
+        if(typeof onChange === 'function') onChange(cache.businesses);
+      },
+      err => {
+        console.warn('businesses snapshot error:', err.code || err.message);
+        setTimeout(() => {
+          if(Auth.profile()) subscribeBusinessesForUser(uid, isAdminUser, onChange);
+        }, 5000);
+      }
+    );
     return () => { if(businessesUnsub) businessesUnsub(); };
   }
 
-  return { loadAll, seedIfEmpty, get, add, update, remove, cache, subscribeOrders, subscribeBusinesses };
+  return {
+    loadAll, seedIfEmpty, get, add, update, remove, cache,
+    subscribeOrdersForUser, subscribeBusinessesForUser
+  };
 })();
 
 /* ============================================================
@@ -697,7 +743,12 @@ const Auth = (() => {
 
   async function init(){
     return new Promise(resolve => {
-      onAuthStateChanged(auth, async user => {
+      let resolved = false;
+      const unsub = onAuthStateChanged(auth, async user => {
+        if(resolved) return;
+        resolved = true;
+        try { unsub(); } catch(e){}
+
         if(!user){
           if(!redirected){
             redirected = true;
@@ -799,11 +850,7 @@ const Auth = (() => {
         popular: false,
         new: true,
         offer: false,
-        delivery: {
-          home: true,
-          pickup: true,
-          freeFrom: biz.freeFrom || 0
-        },
+        delivery: { home: true, pickup: true, freeFrom: biz.freeFrom || 0 },
         status: 'pending',
         rejectionReason: null,
         approvedAt: null,
@@ -814,7 +861,6 @@ const Auth = (() => {
 
       await addDoc(collection(db, 'businesses'), bizData);
       await setDoc(doc(db, 'users', uid), { businessCreated: true }, { merge: true });
-      console.log('✅ Negocio creado (fallback):', biz.name);
     } catch(e){
       console.error('autoCreateBusiness error:', e);
     }
@@ -831,9 +877,7 @@ const Auth = (() => {
     window.location.href = 'index.html';
   }
 
-  function openLogin(cb){
-    window.location.href = 'index.html';
-  }
+  function openLogin(cb){ window.location.href = 'index.html'; }
 
   const FAV = 'mercadito_favs_v2';
   function favorites(){
@@ -1236,45 +1280,6 @@ const Products = (() => {
 })();
 
 /* ============================================================
-   VALIDACIÓN DE NEGOCIOS
-   ============================================================ */
-const BizValidation = (() => {
-  function validate(data){
-    const errors = {};
-    if(!data.owner || data.owner.trim().length < 3) errors.owner = 'Mínimo 3 caracteres';
-    if(!data.name || data.name.trim().length < 3) errors.name = 'Mínimo 3 caracteres';
-    if(!data.whatsapp || !/^\d{10,15}$/.test(String(data.whatsapp).replace(/\D/g,''))) errors.whatsapp = 'Debe tener 10-15 dígitos';
-    if(!data.address || data.address.trim().length < 5) errors.address = 'Dirección muy corta';
-    if(!data.colony || data.colony.trim() === '') errors.colony = 'Debes elegir una zona';
-    else if(!ZONE_NAMES.includes(data.colony)) errors.colony = 'Zona no válida';
-    if(!data.description || data.description.trim().length < 15) errors.description = 'Mínimo 15 caracteres';
-    if(!data.categories || !data.categories.length) errors.categories = 'Selecciona al menos una';
-    if(!data.schedule || !/^\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}$/.test(data.schedule)) errors.schedule = 'Formato HH:MM - HH:MM';
-    const del = Number(data.deliveryFrom);
-    if(isNaN(del) || del < 0 || del > 500) errors.deliveryFrom = 'Entre $0 y $500';
-    return { valid: Object.keys(errors).length === 0, errors };
-  }
-  function renderErrors(errors, prefix){
-    Object.keys(errors).forEach(k=>{
-      const fg = document.getElementById(prefix + k);
-      if(fg){
-        fg.classList.add('error');
-        const errEl = fg.querySelector('.err');
-        if(errEl) errEl.textContent = errors[k];
-      }
-    });
-  }
-  function clearErrors(prefix){
-    document.querySelectorAll(`[id^="${prefix}"]`).forEach(fg=>{
-      fg.classList.remove('error');
-      const e = fg.querySelector('.err');
-      if(e) e.textContent = '';
-    });
-  }
-  return { validate, renderErrors, clearErrors };
-})();
-
-/* ============================================================
    VENDORS
    ============================================================ */
 const Vendors = (() => {
@@ -1294,20 +1299,13 @@ const Vendors = (() => {
     App.render();
   }
 
-  function openRegister(){
-    window.location.href = 'index.html';
-  }
+  function openRegister(){ window.location.href = 'index.html'; }
 
   async function changeZone(newZone){
-    if(!Auth.isAdmin()) {
-      return App.toast('🔒 La zona no se puede cambiar. Contacta al administrador.');
-    }
-    if(!ZONE_NAMES.includes(newZone)) 
-      return App.toast('Zona no válida');
-    
+    if(!Auth.isAdmin()) return App.toast('🔒 La zona no se puede cambiar. Contacta al administrador.');
+    if(!ZONE_NAMES.includes(newZone)) return App.toast('Zona no válida');
     const v = current();
     if(!v) return;
-    
     await DB.update('businesses', v.id, { colony: newZone });
     await DB.loadAll();
     App.toast('📍 Zona actualizada por admin');
@@ -1317,35 +1315,24 @@ const Vendors = (() => {
   async function saveDeliveryCosts(){
     const v = current();
     if(!v) return;
-    
     const newDeliveryFrom = +document.getElementById('editDeliveryFrom').value || 0;
     const newFreeFrom = +document.getElementById('editFreeFrom').value || 0;
-    
-    if(newDeliveryFrom < 0 || newDeliveryFrom > 500) 
-      return App.toast('❌ Costo entre $0 y $500');
-    if(newFreeFrom < 0) 
-      return App.toast('❌ Valor inválido');
-    
+    if(newDeliveryFrom < 0 || newDeliveryFrom > 500) return App.toast('❌ Costo entre $0 y $500');
+    if(newFreeFrom < 0) return App.toast('❌ Valor inválido');
     App.showLoading();
     try {
       await DB.update('businesses', v.id, {
         deliveryFrom: newDeliveryFrom,
-        delivery: {
-          ...(v.delivery || {}),
-          freeFrom: newFreeFrom
-        }
+        delivery: { ...(v.delivery || {}), freeFrom: newFreeFrom }
       });
       await DB.loadAll();
       App.toast('✅ Costos actualizados');
       App.render();
     } catch(e) {
       App.toast('❌ ' + e.message);
-    } finally {
-      App.hideLoading();
-    }
+    } finally { App.hideLoading(); }
   }
 
-  // 🔥 Contar pedidos pendientes (nuevos sin atender)
   function pendingOrdersCount(){
     if(Auth.isAdmin()){
       return DB.get('orders').filter(o => o.status === 'pending').length;
@@ -1355,7 +1342,6 @@ const Vendors = (() => {
     return DB.get('orders').filter(o => o.businessId === v.id && o.status === 'pending').length;
   }
 
-  // 🔥 Actualizar badge del nav
   function updateVendorBadge(){
     const badge = document.getElementById('vendorOrderBadge');
     if(!badge) return;
@@ -1551,6 +1537,7 @@ const WhatsApp = (() => {
             number: num,
             businessId: b.id,
             businessName: b.name,
+            ownerId: b.ownerId,
             colony: b.colony,
             items: items.map(i => ({...i})),
             subtotal: sub, delivery: del, discount: disc, total: tot,
@@ -1561,7 +1548,6 @@ const WhatsApp = (() => {
             date: new Date().toLocaleDateString('es-MX')
           });
           if(coup) await Coupons.incrementUses(coup.code);
-          // El listener de Firestore actualizará DB automáticamente.
           Notifications.add({ title:'Pedido enviado 🎉', body:`#${num} · ${money(tot)}`, icon:'📦' });
           Cart.clear();
           App.closeModal();
@@ -2806,14 +2792,16 @@ const App = (() => {
 
       await DB.loadAll();
 
-      // 🔥 Listener en tiempo real de pedidos
-      DB.subscribeOrders((orders) => {
-        const u = Auth.profile();
-        if(!u) return;
+      const uid = profile.uid;
+      const isAdminUser = Auth.isAdmin();
+      const v = Vendors.current();
+      const bizId = v?.id || null;
 
+      // 🔥 Listener de pedidos filtrado por rol
+      DB.subscribeOrdersForUser(uid, bizId, isAdminUser, (orders) => {
         // ---- Notificaciones al CLIENTE ----
         if(!App._ordersCache) App._ordersCache = {};
-        const myOrders = orders.filter(o => o.userId === u.uid);
+        const myOrders = orders.filter(o => o.userId === uid);
         myOrders.forEach(o => {
           const prev = App._ordersCache[o.id];
           if(prev && prev.status !== o.status){
@@ -2834,46 +2822,31 @@ const App = (() => {
         myOrders.forEach(o => App._ordersCache[o.id] = o);
 
         // ---- Notificaciones al VENDEDOR ----
-        if(Auth.isVendor()){
-          const v = Vendors.current();
-          if(v){
-            if(!App._vendorOrdersCache) App._vendorOrdersCache = {};
-            const myBizOrders = orders.filter(o => o.businessId === v.id);
-            myBizOrders.forEach(o => {
-              if(!App._vendorOrdersCache[o.id]){
-                App._vendorOrdersCache[o.id] = o;
-                if(o.status === 'pending'){
-                  Notifications.add({
-                    title:`🛎️ Pedido nuevo #${o.number}`,
-                    body:`${o.customer?.name || 'Cliente'} · ${money(o.total)}`,
-                    icon:'📦'
-                  });
-                  Sound.beep();
-                }
-              } else if(App._vendorOrdersCache[o.id].status !== o.status){
-                App._vendorOrdersCache[o.id] = o;
-                if(o.status === 'pending'){
-                  Notifications.add({
-                    title:`🛎️ Pedido nuevo #${o.number}`,
-                    body:`${o.customer?.name || 'Cliente'} · ${money(o.total)}`,
-                    icon:'📦'
-                  });
-                  Sound.beep();
-                }
-              }
-            });
-          }
+        if(Auth.isVendor() && v){
+          if(!App._vendorOrdersCache) App._vendorOrdersCache = {};
+          const myBizOrders = orders.filter(o => o.businessId === v.id);
+          myBizOrders.forEach(o => {
+            const prev = App._vendorOrdersCache[o.id];
+            if(!prev && o.status === 'pending'){
+              Notifications.add({
+                title:`🛎️ Pedido nuevo #${o.number}`,
+                body:`${o.customer?.name || 'Cliente'} · ${money(o.total)}`,
+                icon:'📦'
+              });
+              Sound.beep();
+            }
+            App._vendorOrdersCache[o.id] = o;
+          });
         }
 
-        // ---- Refrescar vista ----
         Vendors.updateVendorBadge();
         if(['orders','vendor','admin','cart','home','account'].includes(App.state.view)){
           App.render();
         }
       });
 
-      // 🔥 Listener en tiempo real de negocios
-      DB.subscribeBusinesses(() => {
+      // 🔥 Listener de negocios filtrado por rol
+      DB.subscribeBusinessesForUser(uid, isAdminUser, () => {
         Vendors.updateVendorBadge();
         if(['home','vendor','admin','category','business','account'].includes(App.state.view)){
           App.render();
