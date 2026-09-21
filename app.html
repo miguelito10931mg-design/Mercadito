@@ -349,7 +349,10 @@ img{max-width:100%;display:block;}
       <span class="nav-icon">🛒</span><small>Carrito</small>
       <span class="badge hidden" id="cartBadge">0</span>
     </button>
-    <button class="nav-item" data-view="account"><span class="nav-icon">👤</span><small>Cuenta</small></button>
+    <button class="nav-item" data-view="account">
+      <span class="nav-icon">👤</span><small>Cuenta</small>
+      <span class="badge hidden" id="vendorOrderBadge">0</span>
+    </button>
   </nav>
 </div>
 
@@ -427,6 +430,32 @@ const safeUrl = u => {
   if (!/^https?:\/\//i.test(s) && !/^data:image\//i.test(s)) return '';
   return s.replace(/["'()\\\s]/g, encodeURIComponent);
 };
+
+/* ============================================================
+   SONIDO PARA PEDIDOS NUEVOS
+   ============================================================ */
+const Sound = (() => {
+  let ctx = null;
+  function beep(){
+    try {
+      if(!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = ctx.currentTime;
+      [880, 1100].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, now + i * 0.18);
+        gain.gain.linearRampToValueAtTime(0.25, now + i * 0.18 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.18 + 0.16);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(now + i * 0.18);
+        osc.stop(now + i * 0.18 + 0.18);
+      });
+    } catch(e){}
+  }
+  return { beep };
+})();
 
 /* ============================================================
    IMAGE UTILS
@@ -585,12 +614,14 @@ const ImageUtils = (() => {
 })();
 
 /* ============================================================
-   DB
+   DB  (con listeners en tiempo real)
    ============================================================ */
 const DB = (() => {
   const collections = ['businesses','products','orders','reviews','promos','coupons','categories','users'];
   const cache = {};
   collections.forEach(c => cache[c] = []);
+  let ordersUnsub = null;
+  let businessesUnsub = null;
 
   async function loadAll(){
     await Promise.all(collections.map(async c => {
@@ -621,7 +652,33 @@ const DB = (() => {
     await deleteDoc(doc(db, c, id));
   }
 
-  return { loadAll, seedIfEmpty, get, add, update, remove, cache };
+  // 🔥 Listener en tiempo real de pedidos
+  function subscribeOrders(onChange){
+    if(ordersUnsub) ordersUnsub();
+    ordersUnsub = onSnapshot(collection(db, 'orders'), snap => {
+      cache.orders = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a,b) => {
+          const ta = a.createdAt?.seconds || 0;
+          const tb = b.createdAt?.seconds || 0;
+          return tb - ta;
+        });
+      if(typeof onChange === 'function') onChange(cache.orders);
+    }, err => console.warn('orders snapshot error', err));
+    return () => { if(ordersUnsub) ordersUnsub(); };
+  }
+
+  // 🔥 Listener en tiempo real de negocios
+  function subscribeBusinesses(onChange){
+    if(businessesUnsub) businessesUnsub();
+    businessesUnsub = onSnapshot(collection(db, 'businesses'), snap => {
+      cache.businesses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(typeof onChange === 'function') onChange(cache.businesses);
+    }, err => console.warn('businesses snapshot error', err));
+    return () => { if(businessesUnsub) businessesUnsub(); };
+  }
+
+  return { loadAll, seedIfEmpty, get, add, update, remove, cache, subscribeOrders, subscribeBusinesses };
 })();
 
 /* ============================================================
@@ -663,7 +720,6 @@ const Auth = (() => {
             };
             saveLocal(currentProfile);
 
-            // ✅ FALLBACK: solo si NO se creó el negocio desde index.html
             if(currentProfile.role === 'vendor' && data.business && !data.businessCreated){
               await autoCreateBusiness(user.uid, data.business, currentProfile);
             }
@@ -688,8 +744,6 @@ const Auth = (() => {
     });
   }
 
-  // ✅ Fallback: solo se ejecuta si el negocio NO se creó desde index.html
-  //    (registros viejos). Ahora usa los datos reales del wizard.
   async function autoCreateBusiness(uid, biz, profile){
     try {
       const snap = await getDocs(query(collection(db, 'businesses'), where('ownerId','==', uid)));
@@ -767,7 +821,6 @@ const Auth = (() => {
   }
 
   async function logout(){
-    // ✅ Limpiar carrito del usuario que se va (antes de borrar el perfil)
     const uid = currentProfile?.uid;
     if(uid){
       try { localStorage.removeItem(`mercadito_cart_v3_${uid}`); } catch(e){}
@@ -870,7 +923,6 @@ const Notifications = (() => {
    ============================================================ */
 const Cart = (() => {
   const BASE_KEY = 'mercadito_cart_v3';
-  // ✅ Clave única por usuario (UID). Si no hay sesión, usa "guest"
   function key(){
     const uid = Auth.profile()?.uid || 'guest';
     return `${BASE_KEY}_${uid}`;
@@ -893,7 +945,6 @@ const Cart = (() => {
     if(!biz) return App.toast('❌ Negocio no encontrado');
     if(biz.status !== 'approved') return App.toast('⏸️ Negocio no disponible');
     if(!biz.open) return App.toast('🔴 Cerrado');
-    // ✅ Sin restricción de zona: puedes comprar a cualquier negocio
 
     const maxStock = Number.isFinite(product.stock) ? product.stock : Infinity;
     const currentQty = qty(product.id);
@@ -1148,7 +1199,6 @@ const Products = (() => {
         let imageUrl = p?.image || '';
         if(ImageUtils.hasNewImage('pImgBox')){
           const blob = ImageUtils.getPendingBlob('pImgBox');
-          // ✅ Usar uid del usuario autenticado
           const uid = Auth.profile()?.uid || v.ownerId;
           imageUrl = await ImageUtils.uploadToStorage(blob, `products/${uid}/${Date.now()}.webp`);
         }
@@ -1295,7 +1345,36 @@ const Vendors = (() => {
     }
   }
 
-  return { current, toggleOpen, openRegister, changeZone, saveDeliveryCosts };
+  // 🔥 Contar pedidos pendientes (nuevos sin atender)
+  function pendingOrdersCount(){
+    if(Auth.isAdmin()){
+      return DB.get('orders').filter(o => o.status === 'pending').length;
+    }
+    const v = current();
+    if(!v) return 0;
+    return DB.get('orders').filter(o => o.businessId === v.id && o.status === 'pending').length;
+  }
+
+  // 🔥 Actualizar badge del nav
+  function updateVendorBadge(){
+    const badge = document.getElementById('vendorOrderBadge');
+    if(!badge) return;
+    if(!Auth.isVendor() && !Auth.isAdmin()){
+      badge.classList.add('hidden');
+      return;
+    }
+    const n = pendingOrdersCount();
+    const prev = +badge.textContent || 0;
+    badge.textContent = n > 99 ? '99+' : n;
+    badge.classList.toggle('hidden', n === 0);
+    if(n > prev && n > 0){
+      badge.classList.remove('bounce');
+      void badge.offsetWidth;
+      badge.classList.add('bounce');
+    }
+  }
+
+  return { current, toggleOpen, openRegister, changeZone, saveDeliveryCosts, pendingOrdersCount, updateVendorBadge };
 })();
 
 /* ============================================================
@@ -1482,7 +1561,7 @@ const WhatsApp = (() => {
             date: new Date().toLocaleDateString('es-MX')
           });
           if(coup) await Coupons.incrementUses(coup.code);
-          await DB.loadAll();
+          // El listener de Firestore actualizará DB automáticamente.
           Notifications.add({ title:'Pedido enviado 🎉', body:`#${num} · ${money(tot)}`, icon:'📦' });
           Cart.clear();
           App.closeModal();
@@ -1855,7 +1934,6 @@ const Admin = (() => {
 const Views = (() => {
 
   function businessesInZone(){
-    // ✅ Filtra por la zona que el usuario tenga seleccionada actualmente
     const colony = App.state.location.colony;
     return DB.get('businesses').filter(b => b.status === 'approved' && b.colony === colony);
   }
@@ -2184,6 +2262,7 @@ const Views = (() => {
     const notifEnabled = ('Notification' in window) && Notification.permission === 'granted';
     const isAdmin = Auth.isAdmin();
     const stats = Admin.stats();
+    const pendingCount = Vendors.pendingOrdersCount();
     return `
       <section class="section" style="padding-top:8px">
         <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);text-align:center">
@@ -2193,9 +2272,15 @@ const Views = (() => {
           <p style="margin:6px 0 0;color:#6b7280;font-size:12px">📍 ${esc(App.state.location.colony)}</p>
         </div>
       </section>
+      ${(Auth.isVendor() || isAdmin) && pendingCount > 0 ? `
+      <section class="section">
+        <button class="btn btn-primary btn-block" data-nav="${isAdmin ? 'admin' : 'vendor'}" style="background:#f59e0b;box-shadow:0 4px 12px rgba(245,158,11,.3)">
+          🛎️ ${pendingCount} pedido(s) pendiente(s)
+        </button>
+      </section>` : ''}
       ${isAdmin && stats.pendingBusinesses > 0 ? `
       <section class="section">
-        <button class="btn btn-primary btn-block" data-action="admin-pending" style="background:#f59e0b;box-shadow:0 4px 12px rgba(245,158,11,.3)">
+        <button class="btn btn-primary btn-block" data-action="admin-pending" style="background:#dc2626;box-shadow:0 4px 12px rgba(220,38,38,.3)">
           ⏳ ${stats.pendingBusinesses} solicitud(es) pendiente(s)
         </button>
       </section>` : ''}
@@ -2406,7 +2491,15 @@ const Views = (() => {
         </button>
       </section>
 
-      <!-- ✅ Zona bloqueada -->
+      ${pending.length ? `
+      <section class="section">
+        <div style="background:#fef3c7;border:1.5px solid #f59e0b;border-radius:14px;padding:14px;text-align:center">
+          <div style="font-size:28px">🛎️</div>
+          <div style="font-weight:700;font-size:15px;margin-top:4px">Tienes ${pending.length} pedido(s) nuevo(s)</div>
+          <div style="font-size:12px;color:#92400e;margin-top:2px">Revísalos abajo y comienza a prepararlos</div>
+        </div>
+      </section>` : ''}
+
       <section class="section">
         <div class="section-head"><h2>📍 Mi zona</h2></div>
         <div class="zone-locked">
@@ -2423,7 +2516,6 @@ const Views = (() => {
         </div>
       </section>
 
-      <!-- ✅ Editar información del negocio -->
       <section class="section">
         <div class="section-head">
           <h2>📝 Información del negocio</h2>
@@ -2441,7 +2533,6 @@ const Views = (() => {
         </div>
       </section>
 
-      <!-- ✅ Costos de envío editables -->
       <section class="section">
         <div class="section-head"><h2>🚚 Costos de envío</h2></div>
         <div style="background:#fff;border-radius:14px;padding:16px;box-shadow:var(--shadow-sm)">
@@ -2578,7 +2669,6 @@ const Categories = (() => {
     }
   }
   function search(q){
-    // ✅ Filtra por la zona seleccionada
     const colony = App.state.location.colony;
     const businesses = DB.get('businesses').filter(b =>
       b.status === 'approved' && b.colony === colony &&
@@ -2697,6 +2787,7 @@ const App = (() => {
     }
     Cart.updateBadge();
     Notifications.updateBadge();
+    Vendors.updateVendorBadge();
     setTimeout(initCarousel, 60);
     setTimeout(()=>{
       if(typeof ImageUtils.setup === 'function'){
@@ -2715,6 +2806,80 @@ const App = (() => {
 
       await DB.loadAll();
 
+      // 🔥 Listener en tiempo real de pedidos
+      DB.subscribeOrders((orders) => {
+        const u = Auth.profile();
+        if(!u) return;
+
+        // ---- Notificaciones al CLIENTE ----
+        if(!App._ordersCache) App._ordersCache = {};
+        const myOrders = orders.filter(o => o.userId === u.uid);
+        myOrders.forEach(o => {
+          const prev = App._ordersCache[o.id];
+          if(prev && prev.status !== o.status){
+            const labels = {
+              preparing:'👨‍🍳 Preparando tu pedido',
+              onway:'🚚 Tu pedido va en camino',
+              delivered:'✅ Pedido entregado',
+              cancelled:'❌ Pedido cancelado'
+            };
+            Notifications.add({
+              title:`Pedido #${o.number}`,
+              body: labels[o.status] || 'Actualizado',
+              icon:'📦'
+            });
+          }
+        });
+        App._ordersCache = {};
+        myOrders.forEach(o => App._ordersCache[o.id] = o);
+
+        // ---- Notificaciones al VENDEDOR ----
+        if(Auth.isVendor()){
+          const v = Vendors.current();
+          if(v){
+            if(!App._vendorOrdersCache) App._vendorOrdersCache = {};
+            const myBizOrders = orders.filter(o => o.businessId === v.id);
+            myBizOrders.forEach(o => {
+              if(!App._vendorOrdersCache[o.id]){
+                App._vendorOrdersCache[o.id] = o;
+                if(o.status === 'pending'){
+                  Notifications.add({
+                    title:`🛎️ Pedido nuevo #${o.number}`,
+                    body:`${o.customer?.name || 'Cliente'} · ${money(o.total)}`,
+                    icon:'📦'
+                  });
+                  Sound.beep();
+                }
+              } else if(App._vendorOrdersCache[o.id].status !== o.status){
+                App._vendorOrdersCache[o.id] = o;
+                if(o.status === 'pending'){
+                  Notifications.add({
+                    title:`🛎️ Pedido nuevo #${o.number}`,
+                    body:`${o.customer?.name || 'Cliente'} · ${money(o.total)}`,
+                    icon:'📦'
+                  });
+                  Sound.beep();
+                }
+              }
+            });
+          }
+        }
+
+        // ---- Refrescar vista ----
+        Vendors.updateVendorBadge();
+        if(['orders','vendor','admin','cart','home','account'].includes(App.state.view)){
+          App.render();
+        }
+      });
+
+      // 🔥 Listener en tiempo real de negocios
+      DB.subscribeBusinesses(() => {
+        Vendors.updateVendorBadge();
+        if(['home','vendor','admin','category','business','account'].includes(App.state.view)){
+          App.render();
+        }
+      });
+
       const params = new URLSearchParams(window.location.search);
       const initialView = params.get('view');
       if(initialView && ['home','vendor','orders','favorites','account','cart','admin'].includes(initialView)){
@@ -2731,6 +2896,7 @@ const App = (() => {
       document.getElementById('locationText').textContent = state.location.colony;
       render();
       updateNav();
+      Vendors.updateVendorBadge();
     }, 700);
 
     document.querySelectorAll('.nav-item').forEach(btn=>{
@@ -2815,7 +2981,6 @@ const App = (() => {
     document.getElementById('saveLoc').onclick = ()=>{
       state.location = { city:'Veracruz', colony: document.getElementById('colonySel').value };
       document.getElementById('locationText').textContent = state.location.colony;
-      // ✅ El carrito NO se vacía al cambiar de zona
       closeModal();
       render();
       toast('📍 Ubicación actualizada');
@@ -2876,7 +3041,6 @@ document.addEventListener('click', async e=>{
 
   if(t.hasAttribute('data-close-modal')){ App.closeModal(); return; }
 
-  // Handler del botón "Solicitar cambio de zona"
   if(t.id === 'requestZoneChange'){
     const v = Vendors.current();
     if(!v) return;
@@ -2885,7 +3049,6 @@ document.addEventListener('click', async e=>{
     return;
   }
 
-  // ✅ Editar información del negocio
   if(t.id === 'editBizInfoBtn'){
     const v = Vendors.current();
     if(!v) return;
@@ -2930,7 +3093,6 @@ document.addEventListener('click', async e=>{
     return;
   }
 
-  // Handler del botón "Guardar costos de envío"
   if(t.id === 'saveDeliveryCosts'){
     Vendors.saveDeliveryCosts();
     return;
@@ -3062,7 +3224,6 @@ document.addEventListener('click', async e=>{
     Cart.clear();
     const c = { businessId:o.businessId, items:[], coupon:null };
     o.items.forEach(i => c.items.push({...i}));
-    // ✅ Guardar en la clave del usuario actual
     const uid = Auth.profile()?.uid || 'guest';
     localStorage.setItem(`mercadito_cart_v3_${uid}`, JSON.stringify(c));
     Cart.updateBadge();
@@ -3145,7 +3306,6 @@ document.addEventListener('click', async e=>{
     try {
       let imageUrl = v.image || '';
       let coverUrl = v.coverImage || '';
-      // ✅ Usar uid del usuario autenticado
       const uid = Auth.profile()?.uid || v.ownerId;
       if(ImageUtils.hasNewImage('vLogoEdit')){
         imageUrl = await ImageUtils.uploadToStorage(ImageUtils.getPendingBlob('vLogoEdit'), `businesses/${uid}/logo_${Date.now()}.webp`);
