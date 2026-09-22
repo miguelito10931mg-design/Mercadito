@@ -291,7 +291,6 @@ img{max-width:100%;display:block;}
 .zone-locked .zone-name{font-weight:700;font-size:15px;}
 .zone-locked .zone-note{font-size:12px;color:var(--text-soft);margin-top:2px;}
 
-/* 🔥 Paginación */
 .load-more-btn{margin:16px 0 8px;width:100%;padding:14px;border-radius:12px;background:#fff;border:1.5px dashed var(--border);color:var(--text-soft);font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;}
 .load-more-btn:active{background:#fafbfc;border-color:var(--primary);color:var(--primary);}
 .load-more-btn:disabled{opacity:.5;}
@@ -423,7 +422,7 @@ const BIZ_STATUS = {
   suspended:{ label:'⏸️ Suspendido', cls:'suspended' }
 };
 
-const PAGE_SIZE = 15; // 🔥 Cuántos pedidos cargar por página
+const PAGE_SIZE = 15;
 
 /* ============================================================
    UTILS
@@ -630,7 +629,6 @@ const DB = (() => {
   let ordersUnsub = null;
   let businessesUnsub = null;
 
-  // 🔥 Estado de paginación del historial
   const pagination = {
     history: {
       lastDoc: null,
@@ -668,7 +666,6 @@ const DB = (() => {
     await deleteDoc(doc(db, c, id));
   }
 
-  // 🔥 Listener de pedidos filtrado por rol (activos en tiempo real)
   function subscribeOrdersForUser(uid, bizId, isAdminUser, onChange){
     if(ordersUnsub) { try { ordersUnsub(); } catch(e){} }
     ordersUnsub = null;
@@ -703,7 +700,6 @@ const DB = (() => {
     return () => { if(ordersUnsub) ordersUnsub(); };
   }
 
-  // 🔥 Listener de negocios filtrado por rol
   function subscribeBusinessesForUser(uid, isAdminUser, onChange){
     if(businessesUnsub) { try { businessesUnsub(); } catch(e){} }
     businessesUnsub = null;
@@ -738,9 +734,17 @@ const DB = (() => {
     return () => { if(businessesUnsub) businessesUnsub(); };
   }
 
-  // 🔥 NUEVO: Cargar historial paginado de pedidos (una sola vez, no listener)
-  //    - Para vendedor: donde businessId == v.id y status en ['delivered','cancelled']
-  //    - Para admin: todos los entregados/cancelados
+  // 🔥 FIX: Actualiza un pedido específico en caché SIN recargar todo.
+  //     Esto evita que el pedido "desaparezca" al cambiar de estado.
+  function patchOrder(id, changes){
+    const idx = cache.orders.findIndex(o => o.id === id);
+    if(idx >= 0){
+      cache.orders[idx] = { ...cache.orders[idx], ...changes };
+      return true;
+    }
+    return false;
+  }
+
   async function loadHistoryPage(role, bizId, reset = false){
     if(pagination.history.loading) return { ok: false, reason: 'loading' };
     if(!reset && !pagination.history.hasMore) return { ok: false, reason: 'no-more' };
@@ -752,7 +756,6 @@ const DB = (() => {
       if(role === 'vendor' && bizId){
         constraints.push(where('businessId', '==', bizId));
       }
-      // Filtramos solo entregados y cancelados para el historial
       constraints.push(where('status', 'in', ['delivered', 'cancelled']));
       constraints.push(orderBy('createdAt', 'desc'));
       if(!reset && pagination.history.lastDoc){
@@ -767,7 +770,6 @@ const DB = (() => {
       if(reset){
         pagination.history.items = nuevos;
       } else {
-        // Evitar duplicados
         const ids = new Set(pagination.history.items.map(o => o.id));
         nuevos.forEach(o => { if(!ids.has(o.id)) pagination.history.items.push(o); });
       }
@@ -779,7 +781,6 @@ const DB = (() => {
     } catch(e){
       pagination.history.loading = false;
       console.warn('loadHistoryPage error:', e.code || e.message);
-      // Si falta índice, Firestore lo dice en consola con un link directo
       return { ok: false, reason: e.code || 'error', msg: e.message };
     }
   }
@@ -788,22 +789,15 @@ const DB = (() => {
     pagination.history = { lastDoc: null, hasMore: true, loading: false, items: [] };
   }
 
-  function getHistory(){
-    return pagination.history.items;
-  }
-
-  function hasMoreHistory(){
-    return pagination.history.hasMore;
-  }
-
-  function isLoadingHistory(){
-    return pagination.history.loading;
-  }
+  function getHistory(){ return pagination.history.items; }
+  function hasMoreHistory(){ return pagination.history.hasMore; }
+  function isLoadingHistory(){ return pagination.history.loading; }
 
   return {
     loadAll, seedIfEmpty, get, add, update, remove, cache,
     subscribeOrdersForUser, subscribeBusinessesForUser,
-    loadHistoryPage, resetHistory, getHistory, hasMoreHistory, isLoadingHistory
+    loadHistoryPage, resetHistory, getHistory, hasMoreHistory, isLoadingHistory,
+    patchOrder
   };
 })();
 
@@ -1540,10 +1534,16 @@ const Orders = (() => {
   function nextNumber(){ return 1000 + list().length + Math.floor(Math.random() * 900); }
 
   async function create(order){ await DB.add('orders', order); }
+
+  // 🔥 FIX PRINCIPAL: actualizar el estado en Firestore Y en caché local.
+  //     Así el pedido NO desaparece de la vista del vendedor.
   async function updateStatus(id, status){
     const o = list().find(x => x.id === id);
     if(!o) return null;
+    // 1) Actualizamos en Firestore
     await DB.update('orders', id, { status });
+    // 2) Actualizamos en caché local INMEDIATAMENTE
+    DB.patchOrder(id, { status });
     return { ...o, status };
   }
 
@@ -2435,7 +2435,6 @@ const Views = (() => {
     </section>`;
   }
 
-  // 🔥 Panel del vendedor con paginación en historial
   function vendorPanel(){
     const v = Vendors.current();
     if(!v) return `
@@ -2510,7 +2509,6 @@ const Views = (() => {
     const orders = Orders.forBusiness(v.id);
     const pending = orders.filter(o => o.status === 'pending');
     const preparing = orders.filter(o => o.status === 'preparing' || o.status === 'onway');
-    // 🔥 El historial ahora viene de la paginación (no de cache.orders)
     const history = DB.getHistory();
     const hasMore = DB.hasMoreHistory();
 
@@ -2630,7 +2628,6 @@ const Views = (() => {
       </section>
       ${preparing.length ? `<section class="section"><div class="section-head"><h2>👨‍🍳 En proceso</h2></div>${preparing.map(orderCard).join('')}</section>` : ''}
 
-      <!-- 🔥 HISTORIAL CON PAGINACIÓN -->
       <section class="section">
         <div class="section-head"><h2>✅ Historial</h2></div>
         ${history.length ? history.map(orderCard).join('') : `<div class="empty" style="padding:20px"><span class="emoji">📭</span><p>Sin historial aún</p></div>`}
@@ -2889,7 +2886,6 @@ const App = (() => {
       const v = Vendors.current();
       const bizId = v?.id || null;
 
-      // 🔥 Cargar primera página del historial SOLO si es vendedor o admin
       if(Auth.isVendor() || isAdminUser){
         DB.resetHistory();
         DB.loadHistoryPage(Auth.isVendor() ? 'vendor' : 'admin', bizId, true).then(() => {
@@ -2897,7 +2893,6 @@ const App = (() => {
         });
       }
 
-      // 🔥 Listener de pedidos filtrado por rol
       DB.subscribeOrdersForUser(uid, bizId, isAdminUser, (orders) => {
         if(!App._ordersCache) App._ordersCache = {};
         const myOrders = orders.filter(o => o.userId === uid);
@@ -3111,7 +3106,6 @@ document.addEventListener('click', async e=>{
 
   if(t.hasAttribute('data-close-modal')){ App.closeModal(); return; }
 
-  // 🔥 Botón "Cargar más" del historial
   if(t.id === 'loadMoreHistory'){
     const btn = t;
     btn.disabled = true;
@@ -3294,8 +3288,8 @@ document.addEventListener('click', async e=>{
       </div>
     `);
     document.getElementById('confirmCancelOrder').onclick = async ()=>{
+      // 🔥 FIX: ya no hacemos DB.loadAll(), Orders.updateStatus ya parchea la caché
       await Orders.updateStatus(id, 'cancelled');
-      await DB.loadAll();
       App.closeModal();
       App.toast('❌ Pedido cancelado');
       App.render();
@@ -3330,6 +3324,8 @@ document.addEventListener('click', async e=>{
   const editCoupon = t.closest('[data-edit-coupon]');
   if(editCoupon){ Coupons.openForm(editCoupon.dataset.editCoupon); return; }
 
+  // 🔥 FIX PRINCIPAL: al cambiar estado ya NO se llama DB.loadAll().
+  //     Orders.updateStatus() ya actualiza la caché local (patchOrder).
   const statusBtn = t.closest('[data-order-status]');
   if(statusBtn){
     const id = statusBtn.dataset.orderStatus;
@@ -3343,17 +3339,17 @@ document.addEventListener('click', async e=>{
         cancelled:'❌ Cancelado'
       }[newStatus] || 'Actualizado';
       Notifications.add({ title:`Pedido #${updated.number}`, body:msg, icon:'📦' });
-      await DB.loadAll();
-      // 🔥 Si pasó a delivered/cancelled, recargar historial paginado
+
+      // Si pasó a delivered/cancelled, recargar historial paginado
       if(newStatus === 'delivered' || newStatus === 'cancelled'){
         DB.resetHistory();
         const isVendor = Auth.isVendor();
         const v = Vendors.current();
-        DB.loadHistoryPage(isVendor ? 'vendor' : 'admin', v?.id, true).then(() => App.render());
-      } else {
-        App.toast(msg);
-        App.render();
+        await DB.loadHistoryPage(isVendor ? 'vendor' : 'admin', v?.id, true);
       }
+      // 🔥 Forzamos renderizado inmediato con la caché ya parcheada
+      App.toast(msg);
+      App.render();
     }
     return;
   }
@@ -3361,10 +3357,13 @@ document.addEventListener('click', async e=>{
   const rmOrder = t.closest('[data-remove-order]');
   if(rmOrder){
     await DB.remove('orders', rmOrder.dataset.removeOrder);
-    // 🔥 Quitar del historial paginado también
+    // 🔥 FIX: eliminar de cache.orders también (antes solo del historial paginado)
+    const idx = DB.cache.orders.findIndex(o => o.id === rmOrder.dataset.removeOrder);
+    if(idx >= 0) DB.cache.orders.splice(idx, 1);
+    // Y del historial paginado
     const hist = DB.getHistory();
-    const idx = hist.findIndex(o => o.id === rmOrder.dataset.removeOrder);
-    if(idx >= 0) hist.splice(idx, 1);
+    const hidx = hist.findIndex(o => o.id === rmOrder.dataset.removeOrder);
+    if(hidx >= 0) hist.splice(hidx, 1);
     App.toast('🗑️ Eliminado');
     App.render();
     return;
