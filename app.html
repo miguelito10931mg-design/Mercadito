@@ -291,6 +291,12 @@ img{max-width:100%;display:block;}
 .zone-locked .zone-name{font-weight:700;font-size:15px;}
 .zone-locked .zone-note{font-size:12px;color:var(--text-soft);margin-top:2px;}
 
+/* 🔥 Paginación */
+.load-more-btn{margin:16px 0 8px;width:100%;padding:14px;border-radius:12px;background:#fff;border:1.5px dashed var(--border);color:var(--text-soft);font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;}
+.load-more-btn:active{background:#fafbfc;border-color:var(--primary);color:var(--primary);}
+.load-more-btn:disabled{opacity:.5;}
+.load-more-btn .spinner-sm{width:16px;height:16px;border:2px solid #eceef1;border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;}
+
 @media (min-width:640px){
   .app-main{max-width:720px;margin:0 auto;width:100%;}
   .bottom-nav{max-width:720px;left:50%;transform:translateX(-50%);border-radius:20px 20px 0 0;}
@@ -387,7 +393,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc,
-  query, where, orderBy, limit, onSnapshot, serverTimestamp, writeBatch
+  query, where, orderBy, limit, startAfter, onSnapshot, serverTimestamp, writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getStorage, ref as sRef, uploadBytes, getDownloadURL, deleteObject
@@ -416,6 +422,8 @@ const BIZ_STATUS = {
   rejected: { label:'🔴 Rechazado',  cls:'rejected' },
   suspended:{ label:'⏸️ Suspendido', cls:'suspended' }
 };
+
+const PAGE_SIZE = 15; // 🔥 Cuántos pedidos cargar por página
 
 /* ============================================================
    UTILS
@@ -613,7 +621,7 @@ const ImageUtils = (() => {
 })();
 
 /* ============================================================
-   DB  (con listeners filtrados por rol)
+   DB  (con listeners filtrados por rol + paginación)
    ============================================================ */
 const DB = (() => {
   const collections = ['businesses','products','orders','reviews','promos','coupons','categories','users'];
@@ -621,6 +629,16 @@ const DB = (() => {
   collections.forEach(c => cache[c] = []);
   let ordersUnsub = null;
   let businessesUnsub = null;
+
+  // 🔥 Estado de paginación del historial
+  const pagination = {
+    history: {
+      lastDoc: null,
+      hasMore: true,
+      loading: false,
+      items: []
+    }
+  };
 
   async function loadAll(){
     await Promise.all(collections.map(async c => {
@@ -650,7 +668,7 @@ const DB = (() => {
     await deleteDoc(doc(db, c, id));
   }
 
-  // 🔥 Listener de pedidos filtrado por rol
+  // 🔥 Listener de pedidos filtrado por rol (activos en tiempo real)
   function subscribeOrdersForUser(uid, bizId, isAdminUser, onChange){
     if(ordersUnsub) { try { ordersUnsub(); } catch(e){} }
     ordersUnsub = null;
@@ -703,7 +721,6 @@ const DB = (() => {
       snap => {
         const nuevos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         if(Auth.isVendor() && !isAdminUser){
-          // Fusionar: no perder otros negocios que ya estaban cacheados
           const otros = cache.businesses.filter(b => !nuevos.some(n => n.id === b.id));
           cache.businesses = [...nuevos, ...otros];
         } else {
@@ -721,9 +738,72 @@ const DB = (() => {
     return () => { if(businessesUnsub) businessesUnsub(); };
   }
 
+  // 🔥 NUEVO: Cargar historial paginado de pedidos (una sola vez, no listener)
+  //    - Para vendedor: donde businessId == v.id y status en ['delivered','cancelled']
+  //    - Para admin: todos los entregados/cancelados
+  async function loadHistoryPage(role, bizId, reset = false){
+    if(pagination.history.loading) return { ok: false, reason: 'loading' };
+    if(!reset && !pagination.history.hasMore) return { ok: false, reason: 'no-more' };
+
+    pagination.history.loading = true;
+
+    try {
+      let constraints = [];
+      if(role === 'vendor' && bizId){
+        constraints.push(where('businessId', '==', bizId));
+      }
+      // Filtramos solo entregados y cancelados para el historial
+      constraints.push(where('status', 'in', ['delivered', 'cancelled']));
+      constraints.push(orderBy('createdAt', 'desc'));
+      if(!reset && pagination.history.lastDoc){
+        constraints.push(startAfter(pagination.history.lastDoc));
+      }
+      constraints.push(limit(PAGE_SIZE));
+
+      const q = query(collection(db, 'orders'), ...constraints);
+      const snap = await getDocs(q);
+
+      const nuevos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(reset){
+        pagination.history.items = nuevos;
+      } else {
+        // Evitar duplicados
+        const ids = new Set(pagination.history.items.map(o => o.id));
+        nuevos.forEach(o => { if(!ids.has(o.id)) pagination.history.items.push(o); });
+      }
+      pagination.history.lastDoc = snap.docs[snap.docs.length - 1] || null;
+      pagination.history.hasMore = snap.docs.length === PAGE_SIZE;
+
+      pagination.history.loading = false;
+      return { ok: true, items: pagination.history.items, hasMore: pagination.history.hasMore };
+    } catch(e){
+      pagination.history.loading = false;
+      console.warn('loadHistoryPage error:', e.code || e.message);
+      // Si falta índice, Firestore lo dice en consola con un link directo
+      return { ok: false, reason: e.code || 'error', msg: e.message };
+    }
+  }
+
+  function resetHistory(){
+    pagination.history = { lastDoc: null, hasMore: true, loading: false, items: [] };
+  }
+
+  function getHistory(){
+    return pagination.history.items;
+  }
+
+  function hasMoreHistory(){
+    return pagination.history.hasMore;
+  }
+
+  function isLoadingHistory(){
+    return pagination.history.loading;
+  }
+
   return {
     loadAll, seedIfEmpty, get, add, update, remove, cache,
-    subscribeOrdersForUser, subscribeBusinessesForUser
+    subscribeOrdersForUser, subscribeBusinessesForUser,
+    loadHistoryPage, resetHistory, getHistory, hasMoreHistory, isLoadingHistory
   };
 })();
 
@@ -2355,6 +2435,7 @@ const Views = (() => {
     </section>`;
   }
 
+  // 🔥 Panel del vendedor con paginación en historial
   function vendorPanel(){
     const v = Vendors.current();
     if(!v) return `
@@ -2429,7 +2510,9 @@ const Views = (() => {
     const orders = Orders.forBusiness(v.id);
     const pending = orders.filter(o => o.status === 'pending');
     const preparing = orders.filter(o => o.status === 'preparing' || o.status === 'onway');
-    const delivered = orders.filter(o => o.status === 'delivered' || o.status === 'cancelled');
+    // 🔥 El historial ahora viene de la paginación (no de cache.orders)
+    const history = DB.getHistory();
+    const hasMore = DB.hasMoreHistory();
 
     function orderCard(o){
       return `
@@ -2546,7 +2629,16 @@ const Views = (() => {
         ${pending.length ? pending.map(orderCard).join('') : `<div class="empty" style="padding:20px"><span class="emoji">📭</span><p>Sin pedidos nuevos</p></div>`}
       </section>
       ${preparing.length ? `<section class="section"><div class="section-head"><h2>👨‍🍳 En proceso</h2></div>${preparing.map(orderCard).join('')}</section>` : ''}
-      ${delivered.length ? `<section class="section"><div class="section-head"><h2>✅ Historial</h2></div>${delivered.slice(0,5).map(orderCard).join('')}</section>` : ''}
+
+      <!-- 🔥 HISTORIAL CON PAGINACIÓN -->
+      <section class="section">
+        <div class="section-head"><h2>✅ Historial</h2></div>
+        ${history.length ? history.map(orderCard).join('') : `<div class="empty" style="padding:20px"><span class="emoji">📭</span><p>Sin historial aún</p></div>`}
+        ${hasMore
+          ? `<button class="load-more-btn" id="loadMoreHistory">📥 Cargar más pedidos</button>`
+          : (history.length ? `<div style="text-align:center;color:#9ca3af;font-size:12px;padding:12px">— Fin del historial —</div>` : '')
+        }
+      </section>
 
       <section class="section">
         <div class="section-head"><h2>🎨 Imágenes</h2></div>
@@ -2797,9 +2889,16 @@ const App = (() => {
       const v = Vendors.current();
       const bizId = v?.id || null;
 
+      // 🔥 Cargar primera página del historial SOLO si es vendedor o admin
+      if(Auth.isVendor() || isAdminUser){
+        DB.resetHistory();
+        DB.loadHistoryPage(Auth.isVendor() ? 'vendor' : 'admin', bizId, true).then(() => {
+          if(App.state.view === 'vendor' || App.state.view === 'admin') App.render();
+        });
+      }
+
       // 🔥 Listener de pedidos filtrado por rol
       DB.subscribeOrdersForUser(uid, bizId, isAdminUser, (orders) => {
-        // ---- Notificaciones al CLIENTE ----
         if(!App._ordersCache) App._ordersCache = {};
         const myOrders = orders.filter(o => o.userId === uid);
         myOrders.forEach(o => {
@@ -2821,7 +2920,6 @@ const App = (() => {
         App._ordersCache = {};
         myOrders.forEach(o => App._ordersCache[o.id] = o);
 
-        // ---- Notificaciones al VENDEDOR ----
         if(Auth.isVendor() && v){
           if(!App._vendorOrdersCache) App._vendorOrdersCache = {};
           const myBizOrders = orders.filter(o => o.businessId === v.id);
@@ -2845,7 +2943,6 @@ const App = (() => {
         }
       });
 
-      // 🔥 Listener de negocios filtrado por rol
       DB.subscribeBusinessesForUser(uid, isAdminUser, () => {
         Vendors.updateVendorBadge();
         if(['home','vendor','admin','category','business','account'].includes(App.state.view)){
@@ -3013,6 +3110,29 @@ document.addEventListener('click', async e=>{
   const t = e.target;
 
   if(t.hasAttribute('data-close-modal')){ App.closeModal(); return; }
+
+  // 🔥 Botón "Cargar más" del historial
+  if(t.id === 'loadMoreHistory'){
+    const btn = t;
+    btn.disabled = true;
+    const original = btn.innerHTML;
+    btn.innerHTML = `<span class="spinner-sm"></span> Cargando...`;
+    const isVendor = Auth.isVendor();
+    const v = Vendors.current();
+    const res = await DB.loadHistoryPage(isVendor ? 'vendor' : 'admin', v?.id, false);
+    btn.disabled = false;
+    btn.innerHTML = original;
+    if(res.ok){
+      App.render();
+      if(!res.hasMore) App.toast('📭 No hay más pedidos');
+    } else if(res.reason === 'no-more'){
+      App.toast('📭 No hay más pedidos');
+      App.render();
+    } else {
+      App.toast('❌ Error al cargar');
+    }
+    return;
+  }
 
   if(t.id === 'requestZoneChange'){
     const v = Vendors.current();
@@ -3224,8 +3344,16 @@ document.addEventListener('click', async e=>{
       }[newStatus] || 'Actualizado';
       Notifications.add({ title:`Pedido #${updated.number}`, body:msg, icon:'📦' });
       await DB.loadAll();
-      App.toast(msg);
-      App.render();
+      // 🔥 Si pasó a delivered/cancelled, recargar historial paginado
+      if(newStatus === 'delivered' || newStatus === 'cancelled'){
+        DB.resetHistory();
+        const isVendor = Auth.isVendor();
+        const v = Vendors.current();
+        DB.loadHistoryPage(isVendor ? 'vendor' : 'admin', v?.id, true).then(() => App.render());
+      } else {
+        App.toast(msg);
+        App.render();
+      }
     }
     return;
   }
@@ -3233,7 +3361,10 @@ document.addEventListener('click', async e=>{
   const rmOrder = t.closest('[data-remove-order]');
   if(rmOrder){
     await DB.remove('orders', rmOrder.dataset.removeOrder);
-    await DB.loadAll();
+    // 🔥 Quitar del historial paginado también
+    const hist = DB.getHistory();
+    const idx = hist.findIndex(o => o.id === rmOrder.dataset.removeOrder);
+    if(idx >= 0) hist.splice(idx, 1);
     App.toast('🗑️ Eliminado');
     App.render();
     return;
